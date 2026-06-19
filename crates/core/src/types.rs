@@ -68,24 +68,27 @@ pub struct NicheAssessment {
 }
 
 /// Growth level classification.
+#[derive(Debug)]
 pub enum GrowthLevel {
-    Decay,          // Λ < 1
-    Steady,         // Λ = 1
-    Weak,           // 1 < Λ ≤ e
-    Strong,         // e < Λ ≤ e²
-    Explosive,      // Λ > e²
+    Decay,
+    Steady,
+    Weak,
+    Strong,
+    Explosive,
 }
 
 /// Exposure level classification.
+#[derive(Debug)]
 pub enum ExposureLevel {
-    Trace,          // G < 1
-    Circle,         // 1 ≤ G < 10
-    CrossCircle,    // 10 ≤ G < 100
-    Phenomenal,     // 100 ≤ G < 1000
-    Global,         // G ≥ 1000
+    Trace,
+    Circle,
+    CrossCircle,
+    Phenomenal,
+    Global,
 }
 
 /// Quadrant classification.
+#[derive(Debug)]
 pub enum Quadrant {
     TrueSelfGrowth,
     PseudoSelfGrowth,
@@ -94,6 +97,7 @@ pub enum Quadrant {
 }
 
 /// Willingness to pay level.
+#[derive(Debug)]
 pub enum WillingnessLevel {
     Low,
     Medium,

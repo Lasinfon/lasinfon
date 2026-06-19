@@ -74,8 +74,9 @@ version = "0.1.0"
 dependencies = [
  "lasinfon-config",
  "lasinfon-core",
- "lasinfon-monte-carlo",
  "lasinfon-state",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
