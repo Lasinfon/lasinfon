@@ -11,3 +11,4 @@
 /.vscode/
 .cargo/config.toml
 crates/wasm/pkg/
+crates/wasm/www/pkg/
