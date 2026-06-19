@@ -1,6 +1,7 @@
 /// Core data structures for the lasinfon engine.
 
 /// Seed content scores (19 factors).
+#[derive(Clone)]
 pub struct SeedScores {
     pub content_emotion_arousal: f64,
     pub social_currency_attr: f64,
@@ -16,6 +17,7 @@ pub struct SeedScores {
 }
 
 /// Meme entity (seed light + gain medium parameters).
+#[derive(Clone)]
 pub struct MemeEntity {
     pub E: f64,    // seed potential [0.1, 1.0]
     pub S: f64,    // physical conductance [0.0, 1.0]
@@ -26,6 +28,7 @@ pub struct MemeEntity {
 }
 
 /// Dynamic field state (evolving parameters).
+#[derive(Clone)]
 pub struct FieldState {
     pub t: usize,
     pub C_t: f64,           // active resonance ratio [0.0, 1.0]

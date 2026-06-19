@@ -2,7 +2,6 @@
 name = "lasinfon-core"
 version.workspace = true
 edition.workspace = true
-authors.workspace = true
 
 [dependencies]
-libm = "0.2"   # Provides no_std compatible math functions (exp, log, etc.)
+libm = "0.2"

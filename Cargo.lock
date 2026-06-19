@@ -113,6 +113,8 @@ version = "0.1.0"
 dependencies = [
  "lasinfon-core",
  "libm",
+ "rand",
+ "rand_distr",
 ]
 
 [[package]]
