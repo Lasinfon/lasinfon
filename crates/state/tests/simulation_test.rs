@@ -3,8 +3,6 @@ use lasinfon_state::state_transfer::StateTransferParams;
 use lasinfon_state::simulation::{run_simulation, SimulationConfig};
 
 fn default_inputs() -> (SeedScores, MemeEntity, FieldState, EnvInputs, SeedWeights, KMappings, SWeights, RWeights, MuPsychWeights, TrustWeights, OmegaConfig, MappingOmega, WWeights, StateTransferParams) {
-    // ... same as monte-carlo tests, but we'll use a helper later
-    // We'll copy from monte-carlo tests for now.
     let scores = SeedScores {
         content_emotion_arousal: 5.0, social_currency_attr: 5.0, practical_value: 5.0,
         uniqueness: 5.0, innovation: 5.0, enhancement: 5.0, strangeness: 5.0,
@@ -90,10 +88,7 @@ fn test_simulation_stochastic() {
         &cfg,
     );
     assert_eq!(records.len(), 5);
-    // Values should vary slightly due to noise
-    let first_G = records[0].G;
-    let second_G = records[1].G;
-    // Might differ if noise is non-zero; at least one should differ if sigma>0
-    // Since sigma is small, difference might not be guaranteed, but we check they are finite
-    assert!(first_G.is_finite() && second_G.is_finite());
+    let first_g = records[0].G;
+    let second_g = records[1].G;
+    assert!(first_g.is_finite() && second_g.is_finite());
 }
