@@ -1,5 +1,7 @@
 #![allow(non_snake_case)]
 
+pub mod merge;
+
 use serde::Deserialize;
 use std::fs;
 use std::path::Path;
