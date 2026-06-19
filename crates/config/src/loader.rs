@@ -1,11 +1,20 @@
 use crate::types::SystemConfig;
-use std::fs;
-use std::path::Path;
+use crate::merge::load_and_merge_json_files;
+use serde_json::Value;
+use std::path::PathBuf;
 
 /// Load a single config JSON file.
-pub fn load_config(path: &Path) -> Result<SystemConfig, Box<dyn std::error::Error>> {
-    let content = fs::read_to_string(path)?;
+pub fn load_config(path: &std::path::Path) -> Result<SystemConfig, Box<dyn std::error::Error>> {
+    let content = std::fs::read_to_string(path)?;
     let config: SystemConfig = serde_json::from_str(&content)?;
+    Ok(config)
+}
+
+/// Load and merge multiple config JSON files, then deserialize into SystemConfig.
+/// Files are merged left-to-right (later files override earlier ones).
+pub fn load_merged_configs(paths: &[PathBuf]) -> Result<SystemConfig, Box<dyn std::error::Error>> {
+    let merged: Value = load_and_merge_json_files(paths)?;
+    let config: SystemConfig = serde_json::from_value(merged)?;
     Ok(config)
 }
 

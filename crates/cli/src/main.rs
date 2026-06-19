@@ -4,9 +4,10 @@ use lasinfon_core::types::*;
 use lasinfon_core::formulas::pipeline::{compute_full_pipeline, PipelineOutput};
 use lasinfon_state::state_transfer::{self, StateTransferParams};
 use lasinfon_state::simulation::{run_simulation, SimulationConfig, StepRecord};
-use lasinfon_config::load_config;
+use lasinfon_config::{load_merged_configs, validate_config};
 use serde::Deserialize;
 use serde::Serialize;
+use serde_json::Value;
 use std::fs;
 use std::path::PathBuf;
 
@@ -258,12 +259,31 @@ fn build_state_params(config: &lasinfon_config::SystemConfig) -> StateTransferPa
     }
 }
 
+// ---- Input merging ----
+
+/// Load and merge multiple input JSON files into a single InputData.
+fn load_and_merge_inputs(paths: &[PathBuf]) -> Result<InputData, Box<dyn std::error::Error>> {
+    use lasinfon_config::merge::merge_json_values;
+    let mut merged: Option<Value> = None;
+    for path in paths {
+        let content = fs::read_to_string(path)?;
+        let val: Value = serde_json::from_str(&content)?;
+        match merged.as_mut() {
+            Some(base) => merge_json_values(base, &val),
+            None => merged = Some(val),
+        }
+    }
+    let final_val = merged.ok_or("At least one input file is required")?;
+    let input: InputData = serde_json::from_value(final_val)?;
+    Ok(input)
+}
+
 // ---- Main ----
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 2 {
-        eprintln!("Usage: lasinfon <run|simulate> [options]");
+        eprintln!("Usage: lasinfon <run|simulate> [--config <file>...] [--input <file>...] [options]");
         std::process::exit(1);
     }
     let command = &args[1];
@@ -279,22 +299,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
-fn parse_pair(args: &[String], key: &str) -> Option<String> {
-    for i in 0..args.len() {
+fn parse_multiple(args: &[String], key: &str) -> Vec<String> {
+    let mut values = Vec::new();
+    let mut i = 0;
+    while i < args.len() {
         if args[i] == key && i + 1 < args.len() {
-            return Some(args[i + 1].clone());
+            values.push(args[i + 1].clone());
+            i += 1;
         }
+        i += 1;
     }
-    None
+    values
 }
 
 fn run_command(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
-    let config_path = parse_pair(args, "--config").expect("Missing --config");
-    let input_path = parse_pair(args, "--input").expect("Missing --input");
+    let config_paths: Vec<PathBuf> = parse_multiple(args, "--config").into_iter().map(PathBuf::from).collect();
+    let input_paths: Vec<PathBuf> = parse_multiple(args, "--input").into_iter().map(PathBuf::from).collect();
 
-    let config = load_config(&PathBuf::from(&config_path))?;
-    let input_json = fs::read_to_string(&input_path)?;
-    let input: InputData = serde_json::from_str(&input_json)?;
+    if config_paths.is_empty() || input_paths.is_empty() {
+        eprintln!("run requires at least one --config and one --input");
+        std::process::exit(1);
+    }
+
+    let config = load_merged_configs(&config_paths)?;
+    let warnings = validate_config(&config);
+    for w in warnings {
+        eprintln!("[WARN] {}", w);
+    }
+
+    let input = load_and_merge_inputs(&input_paths)?;
 
     let scores: SeedScores = input.scores.into();
     let field: FieldState = input.field.into();
@@ -364,25 +397,38 @@ fn run_command(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn simulate_command(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
-    let config_path = parse_pair(args, "--config").expect("Missing --config");
-    let input_path = parse_pair(args, "--input").expect("Missing --input");
+    let config_paths: Vec<PathBuf> = parse_multiple(args, "--config").into_iter().map(PathBuf::from).collect();
+    let input_paths: Vec<PathBuf> = parse_multiple(args, "--input").into_iter().map(PathBuf::from).collect();
 
-    let max_ticks: usize = parse_pair(args, "--max-ticks")
+    if config_paths.is_empty() || input_paths.is_empty() {
+        eprintln!("simulate requires at least one --config and one --input");
+        std::process::exit(1);
+    }
+
+    let max_ticks: usize = parse_multiple(args, "--max-ticks")
+        .first()
         .map(|s| s.parse().unwrap_or(50))
         .unwrap_or(50);
-    let sigma: f64 = parse_pair(args, "--sigma")
+    let sigma: f64 = parse_multiple(args, "--sigma")
+        .first()
         .map(|s| s.parse().unwrap_or(0.0))
         .unwrap_or(0.0);
-    let seed: Option<u64> = parse_pair(args, "--seed")
+    let seed: Option<u64> = parse_multiple(args, "--seed")
+        .first()
         .map(|s| s.parse().ok())
         .flatten();
-    let stop_when_saturated: bool = parse_pair(args, "--stop-saturated")
+    let stop_when_saturated: bool = parse_multiple(args, "--stop-saturated")
+        .first()
         .map(|s| s == "true" || s == "1")
         .unwrap_or(true);
 
-    let config = load_config(&PathBuf::from(&config_path))?;
-    let input_json = fs::read_to_string(&input_path)?;
-    let input: InputData = serde_json::from_str(&input_json)?;
+    let config = load_merged_configs(&config_paths)?;
+    let warnings = validate_config(&config);
+    for w in warnings {
+        eprintln!("[WARN] {}", w);
+    }
+
+    let input = load_and_merge_inputs(&input_paths)?;
 
     let scores: SeedScores = input.scores.into();
     let field: FieldState = input.field.into();
