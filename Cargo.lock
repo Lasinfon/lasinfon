@@ -115,6 +115,7 @@ dependencies = [
  "libm",
  "rand",
  "rand_distr",
+ "serde",
 ]
 
 [[package]]

@@ -3,8 +3,10 @@ use crate::state_transfer::{tick, StateTransferParams};
 use rand::SeedableRng;
 use rand_distr::{Distribution, Normal};
 use libm::exp;
+use serde::Serialize;
 
 /// Record of a single time step in a simulation.
+#[derive(Debug, Clone, Serialize)]
 pub struct StepRecord {
     pub t: usize,
     pub C_t: f64,
