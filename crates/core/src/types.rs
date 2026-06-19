@@ -37,7 +37,7 @@ pub struct FieldState {
     pub K_soil: f64,        // soil conductance [0.3, 1.5]
     pub K_comp: f64,        // competition crowding [0.3, 1.0]
     pub K_base: f64,        // base field topology [0.0, 2.25]
-    pub A_algo: f64,        // algorithmic amplifier [0.0, )
+    pub A_algo: f64,        // algorithmic amplifier [0.0, ∞)
     pub T: f64,             // threat index [0.0, 10.0]
     pub T_effective: f64,   // effective threat [0.0, 10.0]
     pub challengability_score: f64, // [0.0, 10.0]
@@ -47,7 +47,7 @@ pub struct FieldState {
 /// Outcome of Q-switch detection.
 pub struct QSwitchResult {
     pub omega: f64,         // Q-switch magnitude
-    pub K_niche: f64,       // niche coefficient (1.0 if triggered, else 1 - T_eff/10)
+    pub K_niche: f64,       // niche coefficient
     pub triggered: bool,
 }
 
@@ -68,20 +68,20 @@ pub struct NicheAssessment {
 
 /// Growth level classification.
 pub enum GrowthLevel {
-    Decay,          //  < 1
-    Steady,         //  = 1
-    Weak,           // 1 <   e
-    Strong,         // e <   e
-    Explosive,      //  > e
+    Decay,          // Λ < 1
+    Steady,         // Λ = 1
+    Weak,           // 1 < Λ ≤ e
+    Strong,         // e < Λ ≤ e²
+    Explosive,      // Λ > e²
 }
 
 /// Exposure level classification.
 pub enum ExposureLevel {
     Trace,          // G < 1
-    Circle,         // 1  G < 10
-    CrossCircle,    // 10  G < 100
-    Phenomenal,     // 100  G < 1000
-    Global,         // G  1000
+    Circle,         // 1 ≤ G < 10
+    CrossCircle,    // 10 ≤ G < 100
+    Phenomenal,     // 100 ≤ G < 1000
+    Global,         // G ≥ 1000
 }
 
 /// Quadrant classification.
@@ -98,4 +98,16 @@ pub enum WillingnessLevel {
     Medium,
     High,
     VeryHigh,
+}
+
+/// Weights for computing seed potential E.
+pub struct SeedWeights {
+    pub w_emotion_arousal: f64,
+    pub w_social_currency: f64,
+    pub w_practical_value: f64,
+    pub w_info_advantage: f64,
+    pub w_narrative_completeness: f64,
+    pub w_remix_openness: f64,
+    pub w_source_credibility: f64,
+    pub w_personification: f64,
 }

@@ -175,6 +175,8 @@ fn default_beta_range() -> f64 { 0.5 }
 #[derive(Debug, Deserialize, Clone, Default)]
 pub struct WeightsConfig {
     #[serde(default)]
+    pub seed: SeedWeights,
+    #[serde(default)]
     pub S: SWeights,
     #[serde(default)]
     pub R: RWeights,
@@ -189,6 +191,35 @@ pub struct WeightsConfig {
     #[serde(default)]
     pub W: WWeights,
 }
+
+#[derive(Debug, Deserialize, Clone, Default)]
+pub struct SeedWeights {
+    #[serde(default = "default_w_emotion_arousal")]
+    pub w_emotion_arousal: f64,
+    #[serde(default = "default_w_social_currency")]
+    pub w_social_currency: f64,
+    #[serde(default = "default_w_practical_value")]
+    pub w_practical_value: f64,
+    #[serde(default = "default_w_info_advantage")]
+    pub w_info_advantage: f64,
+    #[serde(default = "default_w_narrative_completeness")]
+    pub w_narrative_completeness: f64,
+    #[serde(default = "default_w_remix_openness")]
+    pub w_remix_openness: f64,
+    #[serde(default = "default_w_source_credibility")]
+    pub w_source_credibility: f64,
+    #[serde(default = "default_w_personification")]
+    pub w_personification: f64,
+}
+
+fn default_w_emotion_arousal() -> f64 { 0.21 }
+fn default_w_social_currency() -> f64 { 0.18 }
+fn default_w_practical_value() -> f64 { 0.09 }
+fn default_w_info_advantage() -> f64 { 0.12 }
+fn default_w_narrative_completeness() -> f64 { 0.125 }
+fn default_w_remix_openness() -> f64 { 0.125 }
+fn default_w_source_credibility() -> f64 { 0.105 }
+fn default_w_personification() -> f64 { 0.045 }
 
 #[derive(Debug, Deserialize, Clone, Default)]
 pub struct SWeights {

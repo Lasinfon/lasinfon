@@ -1,23 +1,8 @@
 {
-  "system": {
-    "alpha": 0.2
-  },
+  "system": { "alpha": 0.2 },
   "precision": {
-    "input": {
-      "factor_score": 1,
-      "pct_score": 2
-    },
-    "display": {
-      "G": 2,
-      "Lambda": 4,
-      "E": 3,
-      "R": 2,
-      "S": 2,
-      "K": 2,
-      "sigma": 3,
-      "confidence_interval": 1,
-      "percentage": 1
-    }
+    "input": { "factor_score": 1, "pct_score": 2 },
+    "display": { "G": 2, "Lambda": 4, "E": 3, "R": 2, "S": 2, "K": 2, "sigma": 3, "confidence_interval": 1, "percentage": 1 }
   },
   "stochastic": {
     "sigma": 0.15,
@@ -46,11 +31,18 @@
     "scale": 2.5,
     "denom": 1000
   },
-  "niche": {
-    "beta_min": 0.3,
-    "beta_range": 0.5
-  },
+  "niche": { "beta_min": 0.3, "beta_range": 0.5 },
   "weights": {
+    "seed": {
+      "w_emotion_arousal": 0.21,
+      "w_social_currency": 0.18,
+      "w_practical_value": 0.09,
+      "w_info_advantage": 0.12,
+      "w_narrative_completeness": 0.125,
+      "w_remix_openness": 0.125,
+      "w_source_credibility": 0.105,
+      "w_personification": 0.045
+    },
     "S": { "w_cognitive": 0.60, "w_operational": 0.40 },
     "R": { "w_content": 0.35, "w_audience": 0.40, "w_environment": 0.25 },
     "mu_psych": { "w_antipathy": 0.60, "w_suspicion": 0.40 },
@@ -60,26 +52,9 @@
     "W": { "w_enhance": 0.40, "w_trust": 0.30, "w_unique": 0.20, "w_R": 0.10 }
   },
   "mapping": {
-    "K_pot": {
-      "base": 0.8,
-      "slope": 0.7,
-      "w_surge": 0.4,
-      "w_current": 0.4,
-      "w_terrain": 0.2
-    },
-    "K_soil": {
-      "base": 0.3,
-      "slope": 1.2,
-      "w_density": 0.6,
-      "w_connect": 0.4
-    },
-    "K_comp": {
-      "base": 1.0,
-      "slope": 0.7
-    },
-    "omega": {
-      "scale": 2.5,
-      "denom": 1000
-    }
+    "K_pot": { "base": 0.8, "slope": 0.7, "w_surge": 0.4, "w_current": 0.4, "w_terrain": 0.2 },
+    "K_soil": { "base": 0.3, "slope": 1.2, "w_density": 0.6, "w_connect": 0.4 },
+    "K_comp": { "base": 1.0, "slope": 0.7 },
+    "omega": { "scale": 2.5, "denom": 1000 }
   }
 }
