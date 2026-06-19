@@ -1,3 +1,12 @@
+# Rust build artifacts
 /target
 **/*.rs.bk
-Cargo.lock
+
+# OS-specific files
+.DS_Store
+.directory
+
+# IDE-specific configurations
+/.idea/
+/.vscode/
+.cargo/config.toml
