@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 use lasinfon_core::types::*;
 use lasinfon_core::formulas::pipeline::{compute_full_pipeline, PipelineOutput};
 use lasinfon_state::state_transfer::{self, StateTransferParams};
