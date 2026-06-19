@@ -1,0 +1,14 @@
+[package]
+name = "lasinfon-cli"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "lasinfon"
+path = "src/main.rs"
+
+[dependencies]
+lasinfon-core = { path = "../core" }
+lasinfon-state = { path = "../state" }
+lasinfon-monte-carlo = { path = "../monte-carlo" }
+lasinfon-config = { path = "../config" }

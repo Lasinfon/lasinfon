@@ -1,0 +1,8 @@
+[package]
+name = "lasinfon-state"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+lasinfon-core = { path = "../core" }
+libm = "0.2"

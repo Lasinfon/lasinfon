@@ -1,0 +1,85 @@
+{
+  "system": {
+    "alpha": 0.2
+  },
+  "precision": {
+    "input": {
+      "factor_score": 1,
+      "pct_score": 2
+    },
+    "display": {
+      "G": 2,
+      "Lambda": 4,
+      "E": 3,
+      "R": 2,
+      "S": 2,
+      "K": 2,
+      "sigma": 3,
+      "confidence_interval": 1,
+      "percentage": 1
+    }
+  },
+  "stochastic": {
+    "sigma": 0.15,
+    "eta": 0.3,
+    "theta": 0.01,
+    "gamma_saturation": 0.5,
+    "monte_carlo_runs": 1000,
+    "confidence_interval": 0.90
+  },
+  "state_transfer": {
+    "gamma_social_proof": 0.5,
+    "gamma_self_catalysis": 0.1,
+    "gamma_social_pressure": 0.3,
+    "gamma_algo_trending": 0.05,
+    "attention_decay": 0.0,
+    "lambda_R_relaxation": 0.1,
+    "lambda_K_relaxation": 0.1,
+    "lambda_C_relaxation": 0.3
+  },
+  "omega": {
+    "trigger_T": 6,
+    "trigger_R": 7,
+    "trigger_social_currency": 7,
+    "circle_opposition_default": 8.0,
+    "challengability_default": 5.0,
+    "scale": 2.5,
+    "denom": 1000
+  },
+  "niche": {
+    "beta_min": 0.3,
+    "beta_range": 0.5
+  },
+  "weights": {
+    "S": { "w_cognitive": 0.60, "w_operational": 0.40 },
+    "R": { "w_content": 0.35, "w_audience": 0.40, "w_environment": 0.25 },
+    "mu_psych": { "w_antipathy": 0.60, "w_suspicion": 0.40 },
+    "trust": { "w_source": 0.6, "w_audience": 0.4 },
+    "P": { "w_complement": 0.40, "w_traffic": 0.35, "w_binding": 0.25 },
+    "T": { "w_market": 0.50, "w_narrative": 0.30, "w_rule": 0.20 },
+    "W": { "w_enhance": 0.40, "w_trust": 0.30, "w_unique": 0.20, "w_R": 0.10 }
+  },
+  "mapping": {
+    "K_pot": {
+      "base": 0.8,
+      "slope": 0.7,
+      "w_surge": 0.4,
+      "w_current": 0.4,
+      "w_terrain": 0.2
+    },
+    "K_soil": {
+      "base": 0.3,
+      "slope": 1.2,
+      "w_density": 0.6,
+      "w_connect": 0.4
+    },
+    "K_comp": {
+      "base": 1.0,
+      "slope": 0.7
+    },
+    "omega": {
+      "scale": 2.5,
+      "denom": 1000
+    }
+  }
+}

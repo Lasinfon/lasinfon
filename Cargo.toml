@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/core",
+    "crates/state",
+    "crates/monte-carlo",
+    "crates/config",
+    "crates/wasm",
+    "crates/cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["Lasinfon <turn57@live.com>"]
+repository = "https://github.com/Lasinfon/lasinfon"
+description = "lasinfon project workspace"
