@@ -111,3 +111,85 @@ pub struct SeedWeights {
     pub w_source_credibility: f64,
     pub w_personification: f64,
 }
+
+/// Weight sub-structures (mirrors lasinfon-config but independent).
+pub struct SWeights {
+    pub w_cognitive: f64,
+    pub w_operational: f64,
+}
+
+pub struct RWeights {
+    pub w_content: f64,
+    pub w_audience: f64,
+    pub w_environment: f64,
+}
+
+pub struct MuPsychWeights {
+    pub w_antipathy: f64,
+    pub w_suspicion: f64,
+}
+
+pub struct TrustWeights {
+    pub w_source: f64,
+    pub w_audience: f64,
+}
+
+pub struct WWeights {
+    pub w_enhance: f64,
+    pub w_trust: f64,
+    pub w_unique: f64,
+    pub w_R: f64,
+}
+
+pub struct KMappings {
+    pub k_pot: MappingKPot,
+    pub k_soil: MappingKSoil,
+    pub k_comp: MappingKComp,
+}
+
+pub struct MappingKPot {
+    pub base: f64,
+    pub slope: f64,
+    pub w_surge: f64,
+    pub w_current: f64,
+    pub w_terrain: f64,
+}
+
+pub struct MappingKSoil {
+    pub base: f64,
+    pub slope: f64,
+    pub w_density: f64,
+    pub w_connect: f64,
+}
+
+pub struct MappingKComp {
+    pub base: f64,
+    pub slope: f64,
+}
+
+pub struct MappingOmega {
+    pub scale: f64,
+    pub denom: f64,
+}
+
+pub struct OmegaConfig {
+    pub trigger_T: f64,
+    pub trigger_R: f64,
+    pub trigger_social_currency: f64,
+}
+
+/// Environment inputs that are not part of the meme or field state.
+pub struct EnvInputs {
+    pub surge_match: f64,
+    pub current_direction: f64,
+    pub terrain_passability: f64,
+    pub population_density: f64,
+    pub connectivity: f64,
+    pub raw_suppression: f64,
+    pub L_cognitive: f64,
+    pub L_operational: f64,
+    pub L_antipathy: f64,
+    pub content_emotion_intensity: f64,
+    pub audience_resonance_match: f64,
+    pub environment_emotion_fit: f64,
+}
