@@ -29,10 +29,9 @@ fn default_params() -> StateTransferParams {
 #[test]
 fn test_update_active_node_ratio_cold_start() {
     let params = default_params();
-    // C_t = 0, Lambda_eff = 2.0, E = 0.8 => spontaneous activation
-    let C_new = update_active_node_ratio(0.0, 2.0, 0.8, params.eta, params.theta, params.lambda_C);
-    assert!(C_new > 0.0);
-    assert!(C_new <= 1.0);
+    let c_new = update_active_node_ratio(0.0, 2.0, 0.8, params.eta, params.theta, params.lambda_C);
+    assert!(c_new > 0.0);
+    assert!(c_new <= 1.0);
 }
 
 #[test]
@@ -44,10 +43,10 @@ fn test_decay_psych_friction() {
 
 #[test]
 fn test_self_catalyze_resonance() {
-    let R = self_catalyze_resonance(5.0, 2.0, 0.1);
-    assert!(R > 5.0);
-    let R_no = self_catalyze_resonance(5.0, 0.5, 0.1);
-    assert_eq!(R_no, 5.0);
+    let r_val = self_catalyze_resonance(5.0, 2.0, 0.1);
+    assert!(r_val > 5.0);
+    let r_no = self_catalyze_resonance(5.0, 0.5, 0.1);
+    assert_eq!(r_no, 5.0);
 }
 
 #[test]
