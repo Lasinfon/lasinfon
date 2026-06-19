@@ -9,8 +9,9 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 lasinfon-core = { path = "../core" }
 lasinfon-state = { path = "../state" }
-lasinfon-monte-carlo = { path = "../monte-carlo" }
 lasinfon-config = { path = "../config" }
 wasm-bindgen = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+rand = { version = "0.8", features = ["wasm-bindgen"] }
+getrandom = { version = "0.2", features = ["js"] }
