@@ -1,0 +1,10 @@
+{
+  "_description": "Image-sharing platform (e.g., lifestyle curation): high social currency, selective sharing, moderate algorithm.",
+  "field": {
+    "A_algo": 15
+  },
+  "meme": {
+    "social_currency": 8,
+    "share_circle_preference": 3
+  }
+}

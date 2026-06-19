@@ -1,0 +1,10 @@
+{
+  "_description": "Young women (18-30): high social currency sharing, prefer private group sharing, strong emotional resonance.",
+  "meme": {
+    "share_circle_preference": 4
+  },
+  "env": {
+    "audience_resonance_match": 7,
+    "content_emotion_intensity": 8
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "_description": "Parents (30-45): high trust in shared content, low trust in strangers, extremely strong resonance on family/health topics.",
+  "meme": {
+    "audience_trust_base": 8
+  },
+  "env": {
+    "audience_resonance_match": 9,
+    "L_antipathy": 1
+  }
+}

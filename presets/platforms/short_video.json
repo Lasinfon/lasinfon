@@ -1,0 +1,13 @@
+{
+  "_description": "Short-video platform: high algorithmic push, low cognitive friction, fast content decay.",
+  "field": {
+    "A_algo": 50
+  },
+  "env": {
+    "L_cognitive": 2,
+    "L_operational": 1
+  },
+  "state_transfer": {
+    "attention_decay": 0.05
+  }
+}

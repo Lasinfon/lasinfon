@@ -1,0 +1,12 @@
+{
+  "_description": "Second-tier city (e.g., Guangzhou, Chengdu): moderate density, slightly lower connection intensity.",
+  "mapping": {
+    "K_soil": {
+      "w_density": 0.6,
+      "w_connect": 0.5
+    }
+  },
+  "field": {
+    "A_algo": 3
+  }
+}

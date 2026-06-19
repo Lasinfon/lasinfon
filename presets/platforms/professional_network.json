@@ -1,0 +1,13 @@
+{
+  "_description": "Professional network: high trust, low sharing frequency, high cognitive barriers.",
+  "field": {
+    "A_algo": 5
+  },
+  "meme": {
+    "share_cost": 6,
+    "audience_trust_base": 8
+  },
+  "env": {
+    "L_cognitive": 7
+  }
+}

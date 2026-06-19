@@ -1,0 +1,12 @@
+{
+  "_description": "Global hub (e.g., New York, London): extremely diverse networks, lower bonding, higher bridging.",
+  "mapping": {
+    "K_soil": {
+      "w_density": 0.9,
+      "w_connect": 0.4
+    }
+  },
+  "field": {
+    "A_algo": 7
+  }
+}

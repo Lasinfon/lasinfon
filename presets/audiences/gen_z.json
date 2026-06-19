@@ -1,0 +1,13 @@
+{
+  "_description": "Gen Z audience: high sharing tendency, love irony and anti-mainstream, low trust in authority.",
+  "meme": {
+    "share_cost": 2,
+    "audience_trust_base": 3
+  },
+  "env": {
+    "audience_resonance_match": 8
+  },
+  "scores": {
+    "social_currency_attr": 8
+  }
+}

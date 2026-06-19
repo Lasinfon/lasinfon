@@ -1,0 +1,12 @@
+{
+  "_description": "High-density metropolitan area (e.g., Shanghai, New York): dense population, strong social ties, moderate algorithm amplification.",
+  "mapping": {
+    "K_soil": {
+      "w_density": 0.8,
+      "w_connect": 0.7
+    }
+  },
+  "field": {
+    "A_algo": 5
+  }
+}
