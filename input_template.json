@@ -1,0 +1,55 @@
+{
+  "_comment": "Lasinfon Input Template. Replace values with your assessment. Confidence fields are optional but recommended.",
+  "scores": {
+    "content_emotion_arousal": 5.0,    "cf_content_emotion_arousal": 7,
+    "social_currency_attr": 5.0,       "cf_social_currency_attr": 7,
+    "practical_value": 5.0,            "cf_practical_value": 7,
+    "uniqueness": 5.0,                 "cf_uniqueness": 7,
+    "innovation": 5.0,                 "cf_innovation": 7,
+    "enhancement": 5.0,                "cf_enhancement": 7,
+    "strangeness": 5.0,               "cf_strangeness": 7,
+    "narrative_completeness": 5.0,     "cf_narrative_completeness": 7,
+    "remix_openness": 5.0,             "cf_remix_openness": 7,
+    "source_credibility": 5.0,         "cf_source_credibility": 7,
+    "personification": 5.0,            "cf_personification": 7
+  },
+  "meme": {
+    "social_currency": 5.0,            "cf_social_currency": 7,
+    "share_cost": 5.0,                 "cf_share_cost": 7,
+    "audience_trust_base": 5.0,        "cf_audience_trust_base": 7,
+    "share_circle_preference": 5.0,    "cf_share_circle_preference": 7
+  },
+  "field": {
+    "t": 0,
+    "C_t": 0.0,                        "cf_C_t": 10,
+    "R_t": 5.0,                        "cf_R_t": 7,
+    "R_0": 5.0,                        "cf_R_0": 7,
+    "mu_psych_t": 3.0,                 "_mu_psych_t_note": "Ignored at cold start (t=0); computed from L_antipathy and trust deficit. For hot restart (t>0), use historical snapshot.",
+    "cf_mu_psych_t": 5,
+    "K_pot_t": 1.0,                    "cf_K_pot_t": 7,
+    "K_pot_0": 1.0,                    "cf_K_pot_0": 7,
+    "K_soil": 1.0,                     "cf_K_soil": 7,
+    "K_comp": 1.0,                     "cf_K_comp": 7,
+    "K_base": 1.0,                     "cf_K_base": 7,
+    "A_algo": 1.0,                     "cf_A_algo": 7,
+    "T": 2.0,                          "cf_T": 7,
+    "T_effective": 2.0,                "cf_T_effective": 7,
+    "challengability_score": 5.0,      "cf_challengability_score": 7,
+    "circle_opposition": 8.0,          "cf_circle_opposition": 7,
+    "social_currency_t": 5.0,          "cf_social_currency_t": 7
+  },
+  "env": {
+    "surge_match": 5.0,                "cf_surge_match": 7,
+    "current_direction": 5.0,          "cf_current_direction": 7,
+    "terrain_passability": 5.0,        "cf_terrain_passability": 7,
+    "population_density": 5.0,         "cf_population_density": 7,
+    "connectivity": 5.0,               "cf_connectivity": 7,
+    "raw_suppression": 3.0,            "cf_raw_suppression": 7,
+    "L_cognitive": 2.0,                "cf_L_cognitive": 7,
+    "L_operational": 1.0,              "cf_L_operational": 7,
+    "L_antipathy": 2.0,                "cf_L_antipathy": 7,
+    "content_emotion_intensity": 5.0,  "cf_content_emotion_intensity": 7,
+    "audience_resonance_match": 5.0,   "cf_audience_resonance_match": 7,
+    "environment_emotion_fit": 5.0,    "cf_environment_emotion_fit": 7
+  }
+}
