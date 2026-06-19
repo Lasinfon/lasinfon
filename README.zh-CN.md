@@ -1,8 +1,6 @@
----
-date created: ,  24 2026, 6:06:39 
-date modified: ,  6 2026, 3:22:18 
----
-#   
+# Lasinfon
+
+****  
 
 [![](https://img.shields.io/badge/language-Rust-orange.svg)](https://www.rust-lang.org/)
 [![](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
@@ -149,4 +147,8 @@ python3 -m http.server 8000
 
 ## 
 
- Pull Requests `cargo check --workspace`  [1, 2] API  LaTeX
+ Pull Requests `cargo check --workspace`  [1, 2] API  LaTeX 
+
+---
+
+**Lasinfon v5.1.2**  **
