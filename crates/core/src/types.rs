@@ -42,6 +42,7 @@ pub struct FieldState {
     pub T_effective: f64,   // effective threat [0.0, 10.0]
     pub challengability_score: f64, // [0.0, 10.0]
     pub circle_opposition: f64,     // [0.0, 10.0]
+    pub social_currency_t: f64,     // dynamic social currency [0.0, 10.0]
 }
 
 /// Outcome of Q-switch detection.
