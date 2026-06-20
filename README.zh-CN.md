@@ -134,5 +134,4 @@ python3 -m http.server 8000
  `cargo check --workspace`  `cargo test --workspace` 
 
 ---
-**Lasinfon v5.1.2**  
-**
+**Lasinfon v5.1.2**
