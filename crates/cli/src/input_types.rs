@@ -3,7 +3,7 @@
 use lasinfon_core::types::*;
 use lasinfon_config::merge::merge_json_values;
 use serde::Deserialize;
-use serde_json::{Value, json};
+use serde_json::Value;
 use std::fs;
 use std::path::PathBuf;
 
