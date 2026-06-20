@@ -17,7 +17,7 @@ use std::path::PathBuf;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 2 {
-        eprintln!("Usage: lasinfon <run|simulate> [--config <file>...] [--input <file>...] [options]");
+        eprintln!("Usage: lasinfon <run|simulate> [--auto-fill] [--config <file>...] [--input <file>...] [options]");
         std::process::exit(1);
     }
     let command = &args[1];
@@ -46,7 +46,12 @@ fn parse_multiple(args: &[String], key: &str) -> Vec<String> {
     values
 }
 
+fn has_flag(args: &[String], flag: &str) -> bool {
+    args.iter().any(|a| a == flag)
+}
+
 fn run_command(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
+    let auto_fill = has_flag(args, "--auto-fill");
     let config_paths: Vec<PathBuf> = parse_multiple(args, "--config").into_iter().map(PathBuf::from).collect();
     let input_paths: Vec<PathBuf> = parse_multiple(args, "--input").into_iter().map(PathBuf::from).collect();
     if config_paths.is_empty() || input_paths.is_empty() {
@@ -59,12 +64,12 @@ fn run_command(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
         eprintln!("[WARN] {}", w);
     }
 
-    let input = load_and_merge_inputs(&input_paths)?;
+    let input = load_and_merge_inputs(&input_paths, auto_fill)?;
     let scores: SeedScores = input.scores.into();
     let field: FieldState = input.field.into();
     let env: EnvInputs = input.env.into();
     let meme = MemeEntity {
-        E: 0.5, S: 0.5,
+        E: 0.0, S: 0.0,
         social_currency: input.meme.social_currency,
         share_cost: input.meme.share_cost,
         audience_trust_base: input.meme.audience_trust_base,
@@ -118,6 +123,7 @@ fn run_command(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn simulate_command(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
+    let auto_fill = has_flag(args, "--auto-fill");
     let config_paths: Vec<PathBuf> = parse_multiple(args, "--config").into_iter().map(PathBuf::from).collect();
     let input_paths: Vec<PathBuf> = parse_multiple(args, "--input").into_iter().map(PathBuf::from).collect();
     if config_paths.is_empty() || input_paths.is_empty() {
@@ -135,12 +141,12 @@ fn simulate_command(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
         eprintln!("[WARN] {}", w);
     }
 
-    let input = load_and_merge_inputs(&input_paths)?;
+    let input = load_and_merge_inputs(&input_paths, auto_fill)?;
     let scores: SeedScores = input.scores.into();
     let field: FieldState = input.field.into();
     let env: EnvInputs = input.env.into();
     let meme = MemeEntity {
-        E: 0.5, S: 0.5,
+        E: 0.0, S: 0.0,
         social_currency: input.meme.social_currency,
         share_cost: input.meme.share_cost,
         audience_trust_base: input.meme.audience_trust_base,
@@ -166,7 +172,6 @@ fn simulate_command(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-/// Bundle builder calls to reduce repetition.
 fn build_all_params(config: &lasinfon_config::SystemConfig) -> (
     SeedWeights, KMappings, SWeights, RWeights, MuPsychWeights, TrustWeights,
     OmegaConfig, MappingOmega, WWeights, StateTransferParams,

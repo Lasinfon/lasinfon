@@ -150,3 +150,17 @@ Contributions must compile warning-free with `cargo check --workspace` and pass 
 ---
 
 **Lasinfon v5.1.2**  *Predict the propagation, not the message.*
+
+## 💡 Input Validation & Auto-Fill
+
+If your input JSON is missing required fields, Lasinfon will report them and abort.  
+Use the `--auto-fill` flag to automatically fill missing fields with sensible defaults:
+
+```bash
+./target/release/lasinfon simulate \
+  --config config/default.json \
+  --input my_partial_input.json \
+  --auto-fill
+```
+
+*Note: Always prefer providing a complete input (see AI-assisted assessment above). Use `--auto-fill` as a safety net.*
