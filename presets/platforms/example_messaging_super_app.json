@@ -1,0 +1,15 @@
+{
+  "_description": "All-in-one messaging super-app with dense social graph. Extremely high connectivity, low algorithm push, high trust among contacts.",
+  "field": {
+    "A_algo": 3
+  },
+  "env": {
+    "population_density": 10,
+    "connectivity": 10,
+    "L_operational": 1
+  },
+  "meme": {
+    "share_circle_preference": 2,
+    "audience_trust_base": 8
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "_description": "Short-video platform with strong algorithmic amplification. High discoverability, low cognitive friction, fast content decay.",
+  "field": {
+    "A_algo": 50
+  },
+  "env": {
+    "L_cognitive": 2,
+    "L_operational": 1,
+    "population_density": 8,
+    "connectivity": 6
+  },
+  "state_transfer": {
+    "attention_decay": 0.05
+  }
+}

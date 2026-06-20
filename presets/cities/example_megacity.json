@@ -1,0 +1,12 @@
+{
+  "_description": "Megacity (>20M population): ultra-high density, diverse networks, high algorithm usage.",
+  "mapping": {
+    "K_soil": {
+      "w_density": 1.0,
+      "w_connect": 0.6
+    }
+  },
+  "field": {
+    "A_algo": 10
+  }
+}
