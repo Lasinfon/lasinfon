@@ -1,4 +1,5 @@
 use lasinfon_core::types::*;
+use lasinfon_core::formulas::exponent_layer::compute_lambda_and_exposure;
 use crate::state_transfer::{tick, StateTransferParams};
 use rand::SeedableRng;
 use rand_distr::{Distribution, Normal};
@@ -14,7 +15,9 @@ pub struct StepRecord {
     pub mu_psych_t: f64,
     pub K_pot_t: f64,
     pub social_currency_t: f64,
-    pub G: f64,
+    pub G: f64,                  // Active exposure output (G_active)
+    pub G_std: f64,              // SRP standard exposure output (G_std)
+    pub K_mult: f64,             // Dynamic environmental multiplier (K_mult)
     pub lambda_val: f64,
     pub lambda_eff: f64,
     pub W: f64,
@@ -138,6 +141,24 @@ pub fn run_simulation(
             trust_weights.w_source, trust_weights.w_audience,
         );
 
+        // ── Standard Reference Projection (SRP) ──
+        let std_k = 1.0;
+        let std_omega = 0.0;
+        let std_epsilon = 0.0;
+        let (_std_lambda_val, _std_lambda_eff, G_std) = compute_lambda_and_exposure(
+            R, std_omega, mu_psych, std_epsilon,
+            field.C_t, E, std_k, S,
+            alpha, gamma_sat,
+        );
+
+        // ── Division-by-Zero Defense Guardrail (EPSILON protection) ──
+        const EPSILON: f64 = 1e-5;
+        let K_mult = if G_std < EPSILON {
+            1.0
+        } else {
+            G / G_std
+        };
+
         let lambda = exp(lambda_val);
         records.push(StepRecord {
             t: field.t,
@@ -147,6 +168,8 @@ pub fn run_simulation(
             K_pot_t: field.K_pot_t,
             social_currency_t: field.social_currency_t,
             G,
+            G_std,
+            K_mult,
             lambda_val,
             lambda_eff,
             W,

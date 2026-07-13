@@ -4,8 +4,16 @@ use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
 use lasinfon_core::types::*;
 use lasinfon_core::formulas::pipeline::{compute_full_pipeline, PipelineOutput};
+use lasinfon_core::formulas::exponent_layer::compute_lambda_and_exposure;
 use lasinfon_state::state_transfer::{StateTransferParams, tick};
 use lasinfon_state::simulation::{run_simulation, SimulationConfig, StepRecord};
+
+// ── Helper for BARS Clamping ──
+
+/// Clamps the input score to the strict physical bounds of [0.0, 10.0]
+fn clamp_score(val: f64) -> f64 {
+    val.clamp(0.0, 10.0)
+}
 
 // ── Input structures ──
 
@@ -89,7 +97,9 @@ struct ComputeResult {
     q_triggered: bool,
     lambda_val: f64,
     lambda_eff: f64,
-    G: f64,
+    G: f64,             // Active exposure output (G_active)
+    G_std: f64,         // SRP standard exposure output (G_std)
+    K_mult: f64,        // Dynamic environmental multiplier (K_mult)
     W: f64,
     growth_level: String,
     exposure_level: String,
@@ -113,17 +123,17 @@ struct FieldNext {
 impl From<ScoresInput> for SeedScores {
     fn from(inp: ScoresInput) -> Self {
         SeedScores {
-            content_emotion_arousal: inp.content_emotion_arousal,
-            social_currency_attr: inp.social_currency_attr,
-            practical_value: inp.practical_value,
-            uniqueness: inp.uniqueness,
-            innovation: inp.innovation,
-            enhancement: inp.enhancement,
-            strangeness: inp.strangeness,
-            narrative_completeness: inp.narrative_completeness,
-            remix_openness: inp.remix_openness,
-            source_credibility: inp.source_credibility,
-            personification: inp.personification,
+            content_emotion_arousal: clamp_score(inp.content_emotion_arousal),
+            social_currency_attr: clamp_score(inp.social_currency_attr),
+            practical_value: clamp_score(inp.practical_value),
+            uniqueness: clamp_score(inp.uniqueness),
+            innovation: clamp_score(inp.innovation),
+            enhancement: clamp_score(inp.enhancement),
+            strangeness: clamp_score(inp.strangeness),
+            narrative_completeness: clamp_score(inp.narrative_completeness),
+            remix_openness: clamp_score(inp.remix_openness),
+            source_credibility: clamp_score(inp.source_credibility),
+            personification: clamp_score(inp.personification),
         }
     }
 }
@@ -257,6 +267,36 @@ pub fn compute(config_json: &str, scenario_json: &str) -> Result<String, JsValue
         config.system.alpha, config.stochastic.gamma_saturation,
     );
 
+    // ── Standard Reference Projection (SRP) Calculation ──
+    // SRP represents a standard vacuum cavity where:
+    // - Environmental gain K_std is forced to 1.0 (neutral conditions)
+    // - Threat is zero, meaning standard Q-switch omega_std is 0.0
+    // - Quantum fluctuation epsilon is 0.0 (baseline projection)
+    let std_k = 1.0;
+    let std_omega = 0.0;
+    let std_epsilon = 0.0;
+
+    let (_std_lambda_val, _std_lambda_eff, G_std) = compute_lambda_and_exposure(
+        output.R,          // Keep resonance heat (intrinsic content-audience property)
+        std_omega,         // Standard omega = 0.0
+        output.mu_psych,   // Keep psychological friction (intrinsic content-audience property)
+        std_epsilon,       // Standard epsilon = 0.0
+        field.C_t,         // Keep active node ratio
+        output.E,          // Keep computed seed potential
+        std_k,             // Standard environment K = 1.0
+        output.S,          // Keep physical conductance
+        config.system.alpha,
+        config.stochastic.gamma_saturation,
+    );
+
+    // ── Division-by-Zero Defense Guardrail (EPSILON protection) ──
+    const EPSILON: f64 = 1e-5;
+    let K_mult = if G_std < EPSILON {
+        1.0
+    } else {
+        output.G / G_std
+    };
+
     let exposure = ExposureResult {
         lambda_val: output.lambda_val,
         lambda_effective: output.lambda_eff,
@@ -275,6 +315,8 @@ pub fn compute(config_json: &str, scenario_json: &str) -> Result<String, JsValue
         lambda_val: output.lambda_val,
         lambda_eff: output.lambda_eff,
         G: output.G,
+        G_std,
+        K_mult,
         W: output.W,
         growth_level: format!("{:?}", output.growth_level),
         exposure_level: format!("{:?}", output.exposure_level),

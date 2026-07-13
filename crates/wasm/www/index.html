@@ -8,13 +8,30 @@
         .container { display: flex; gap: 20px; max-width: 1200px; margin: 0 auto; }
         .control-panel { width: 350px; background: #1a202c; padding: 15px; border-radius: 8px; }
         .display-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; }
-        .canvas-container { display: flex; gap: 20px; }
+        .canvas-container { display: flex; gap: 20px; flex-wrap: wrap; }
         canvas { background: #0b0f17; border: 1px solid #2d3748; border-radius: 4px; }
-        .btn { background: #4a5568; border: none; color: white; padding: 10px; width: 100%; cursor: pointer; border-radius: 4px; }
+        .btn { background: #4a5568; border: none; color: white; padding: 10px; width: 100%; cursor: pointer; border-radius: 4px; font-weight: bold; }
         .btn:hover { background: #718096; }
         label { display: block; margin-top: 10px; font-size: 12px; color: #a0aec0; }
-        select, input { width: 100%; background: #2d3748; border: 1px solid #4a5568; color: white; padding: 5px; box-sizing: border-box; }
+        select, input, textarea { width: 100%; background: #2d3748; border: 1px solid #4a5568; color: white; padding: 5px; box-sizing: border-box; font-family: monospace; }
+        textarea { height: 120px; resize: vertical; font-size: 11px; }
         pre { background: #0b0f17; padding: 10px; border-radius: 4px; font-size: 11px; overflow-x: auto; max-height: 200px; }
+        .interpretation-box { background: #1a202c; padding: 15px; border-radius: 8px; font-size: 13px; line-height: 1.6; border-left: 4px solid #4299e1; }
+        .interpretation-box h4 { margin: 0 0 8px 0; color: #63b3ed; }
+        .copy-btn { background: #2d3748; border: 1px solid #4a5568; color: #a0aec0; padding: 5px 10px; cursor: pointer; font-size: 11px; border-radius: 4px; margin-top: 10px; }
+        .copy-btn:hover { background: #4a5568; color: white; }
+        .legend { display: flex; gap: 15px; margin-bottom: 5px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 2px; }
+        .diagnostic-card { background: #141a24; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 12px; border: 1px solid #2d3748; }
+        .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .badge-red { background: #9b2c2c; color: #feb2b2; }
+        .badge-yellow { background: #975a16; color: #fef08a; }
+        .badge-green { background: #22543d; color: #c6f6d5; }
+        .btn-sm { background: #2d3748; border: 1px solid #4a5568; color: #a0aec0; padding: 5px 10px; cursor: pointer; font-size: 11px; border-radius: 4px; }
+        .btn-sm:hover { background: #4a5568; color: white; }
+        .collapsible { background: #1a202c; border: 1px solid #2d3748; border-radius: 4px; padding: 10px; margin-top: 10px; }
+        .collapsible summary { cursor: pointer; color: #a0aec0; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -25,11 +42,31 @@
     <div class="control-panel">
         <label>Scenario:</label>
         <select id="preset-selector">
-            <option value="video">A. Tier-2 city + Short-video + Gen Z</option>
-            <option value="professional">B. Global hub + Professional network + Parents</option>
+            <option value="video">A. Gen Z + Short-video Platform</option>
+            <option value="professional">B. Professional Network + Knowledge Parents</option>
+            <option value="custom">CUSTOM – Paste your own JSON</option>
         </select>
 
-        <label>Max ticks:</label>
+        <details class="collapsible" id="custom-panel" style="display:none;">
+            <summary>📋 Custom Input (config + scenario)</summary>
+            <label>Paste complete JSON (config + scenario):</label>
+            <textarea id="custom-json" placeholder='{"config": {...}, "scenario": {...}}'></textarea>
+            <div style="font-size:10px; color:#a0aec0; margin-top:4px;">
+                Must contain <code>"config"</code> and <code>"scenario"</code> objects.
+            </div>
+        </details>
+
+        <details class="collapsible" id="visualize-panel">
+            <summary>📊 Visualize Existing Results</summary>
+            <label>Paste simulation output (array of records):</label>
+            <textarea id="visualize-json" placeholder='[{"t":0, "G":..., ...}, ...]'></textarea>
+            <button class="btn" id="visualize-btn" style="margin-top:5px;">Render Charts from Pasted Data</button>
+            <div style="font-size:10px; color:#a0aec0; margin-top:4px;">
+                Accepts a JSON array of records, or an object with a <code>"records"</code> key.
+            </div>
+        </details>
+
+        <label>Max ticks (for new simulation):</label>
         <input type="number" id="ticks" value="15">
 
         <label>Noise sigma:</label>
@@ -39,21 +76,39 @@
         <input type="number" id="seed" value="123">
 
         <button class="btn" id="run-btn" style="margin-top:20px;">Run Simulation</button>
+        <button class="btn-sm" id="anim-btn" disabled style="margin-top:5px;">▶ Play Evolution Animation</button>
     </div>
 
     <div class="display-panel">
         <div class="canvas-container">
             <div>
-                <div style="font-size:12px; margin-bottom:5px;">Atomic polarization grid (12×12 C_t)</div>
+                <div style="font-size:12px; margin-bottom:5px;">Atomic Polarization Grid (C_t)</div>
                 <canvas id="grid-canvas" width="240" height="240"></canvas>
             </div>
-            <div style="flex:1">
-                <div style="font-size:12px; margin-bottom:5px;">Coherent intensity curve (G_t vs time)</div>
+            <div style="flex:1; min-width:300px;">
+                <div style="font-size:12px; margin-bottom:5px;">Coherent Exposure (G)</div>
                 <canvas id="chart-canvas" width="450" height="240"></canvas>
             </div>
         </div>
+
         <div>
-            <div style="font-size:12px; margin-bottom:5px;">WASM raw output JSON</div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-color" style="background:#f472b6;"></div> R_t (Resonance / Like Likelihood)</div>
+                <div class="legend-item"><div class="legend-color" style="background:#a78bfa;"></div> C_t (Active Nodes / Forward Activity)</div>
+            </div>
+            <canvas id="metrics-canvas" width="710" height="180"></canvas>
+        </div>
+
+        <div>
+            <div style="font-size:12px; margin-bottom:5px;">Health Scan</div>
+            <div class="interpretation-box" id="interpretation-box">
+                <em>Run a simulation or paste results to see the diagnosis.</em>
+            </div>
+            <button class="copy-btn" id="copy-prompt-btn" onclick="copyForAI()">Copy Prompt + Result for Deep AI Analysis</button>
+        </div>
+
+        <div>
+            <div style="font-size:12px; margin-bottom:5px;">WASM Raw Output / Pasted Data</div>
             <pre id="json-output">// Results will appear here...</pre>
         </div>
     </div>
@@ -62,7 +117,10 @@
 <script type="module">
     import init, { simulate } from './pkg/lasinfon_wasm.js';
 
-    // Static scenario definitions (no external dependencies)
+    let lastRecords = [];
+    let animInterval = null;
+
+    // Full presets (no omissions)
     const presets = {
         video: {
             config: {
@@ -90,94 +148,178 @@
                 }
             },
             scenario: {
-                scores: { content_emotion_arousal: 6.0, social_currency_attr: 7.0, practical_value: 5.0, uniqueness: 6.0, innovation: 5.0, enhancement: 6.0, strangeness: 5.0, narrative_completeness: 7.0, remix_openness: 5.0, source_credibility: 6.0, personification: 5.0 },
-                meme: { social_currency: 7.0, share_cost: 2.0, audience_trust_base: 7.0, share_circle_preference: 3.0 },
-                field: { t: 0, C_t: 0.0, R_t: 7.1, R_0: 7.1, mu_psych_t: 2.08, K_pot_t: 1.0, K_pot_0: 1.0, K_soil: 1.05, K_comp: 0.65, K_base: 1.0, A_algo: 50.0, T: 4.0, T_effective: 3.2, challengability_score: 5.0, circle_opposition: 8.0, social_currency_t: 7.0 },
-                env: { surge_match: 5.0, current_direction: 5.0, terrain_passability: 5.0, population_density: 6.0, connectivity: 5.0, raw_suppression: 5.0, L_cognitive: 3.0, L_operational: 2.0, L_antipathy: 3.0, content_emotion_intensity: 6.0, audience_resonance_match: 7.0, environment_emotion_fit: 5.0 }
+                scores: { content_emotion_arousal: 8.5, social_currency_attr: 8.0, practical_value: 4.0, uniqueness: 8.0, innovation: 7.0, enhancement: 6.0, strangeness: 8.0, narrative_completeness: 7.0, remix_openness: 6.0, source_credibility: 5.0, personification: 6.0 },
+                meme: { social_currency: 8.0, share_cost: 2.0, audience_trust_base: 6.0, share_circle_preference: 3.0 },
+                field: { t: 0, C_t: 0.0, R_t: 8.1, R_0: 8.1, mu_psych_t: 1.8, K_pot_t: 1.1, K_pot_0: 1.1, K_soil: 1.2, K_comp: 0.8, K_base: 1.0, A_algo: 80.0, T: 1.0, T_effective: 0.8, challengability_score: 5.0, circle_opposition: 8.0, social_currency_t: 8.0 },
+                env: { surge_match: 7.0, current_direction: 6.0, terrain_passability: 6.0, population_density: 8.0, connectivity: 7.0, raw_suppression: 2.0, L_cognitive: 3.0, L_operational: 2.0, L_antipathy: 1.0, content_emotion_intensity: 8.5, audience_resonance_match: 8.0, environment_emotion_fit: 7.0 }
             }
         },
         professional: {
             config: {
                 system: { alpha: 0.2 },
-                stochastic: { eta: 0.3, theta: 0.01, gamma_saturation: 0.5 },
+                stochastic: { eta: 0.2, theta: 0.01, gamma_saturation: 0.5 },
                 state_transfer: {
-                    gamma_social_proof: 0.5, gamma_self_catalysis: 0.1, gamma_social_pressure: 0.3,
-                    gamma_algo_trending: 0.05, attention_decay: 0.0, lambda_R_relaxation: 0.1,
-                    lambda_K_relaxation: 0.1, lambda_C_relaxation: 0.3
+                    gamma_social_proof: 0.4, gamma_self_catalysis: 0.08, gamma_social_pressure: 0.2,
+                    gamma_algo_trending: 0.02, attention_decay: 0.02, lambda_R_relaxation: 0.15,
+                    lambda_K_relaxation: 0.15, lambda_C_relaxation: 0.3
                 },
                 omega: { trigger_T: 6, trigger_R: 7, trigger_social_currency: 7 },
                 weights: {
-                    seed: { w_emotion_arousal: 0.21, w_social_currency: 0.18, w_practical_value: 0.09, w_info_advantage: 0.12, w_narrative_completeness: 0.125, w_remix_openness: 0.125, w_source_credibility: 0.105, w_personification: 0.045 },
-                    S: { w_cognitive: 0.6, w_operational: 0.4 },
-                    R: { w_content: 0.35, w_audience: 0.4, w_environment: 0.25 },
-                    mu_psych: { w_antipathy: 0.6, w_suspicion: 0.4 },
-                    trust: { w_source: 0.6, w_audience: 0.4 },
+                    seed: { w_emotion_arousal: 0.15, w_social_currency: 0.20, w_practical_value: 0.25, w_info_advantage: 0.10, w_narrative_completeness: 0.10, w_remix_openness: 0.05, w_source_credibility: 0.10, w_personification: 0.05 },
+                    S: { w_cognitive: 0.7, w_operational: 0.3 },
+                    R: { w_content: 0.30, w_audience: 0.5, w_environment: 0.20 },
+                    mu_psych: { w_antipathy: 0.5, w_suspicion: 0.5 },
+                    trust: { w_source: 0.7, w_audience: 0.3 },
                     W: { w_enhance: 0.4, w_trust: 0.3, w_unique: 0.2, w_R: 0.1 }
                 },
                 mapping: {
                     K_pot: { base: 0.8, slope: 0.7, w_surge: 0.4, w_current: 0.4, w_terrain: 0.2 },
-                    K_soil: { base: 0.3, slope: 1.2, w_density: 0.9, w_connect: 0.4 },
+                    K_soil: { base: 0.3, slope: 1.2, w_density: 0.6, w_connect: 0.4 },
                     K_comp: { base: 1.0, slope: 0.7 },
                     omega: { scale: 2.5, denom: 1000 }
                 }
             },
             scenario: {
-                scores: { content_emotion_arousal: 7.0, social_currency_attr: 6.0, practical_value: 6.0, uniqueness: 5.0, innovation: 4.0, enhancement: 5.0, strangeness: 3.0, narrative_completeness: 8.0, remix_openness: 4.0, source_credibility: 8.0, personification: 5.0 },
-                meme: { social_currency: 7.0, share_cost: 6.0, audience_trust_base: 8.0, share_circle_preference: 3.0 },
-                field: { t: 0, C_t: 0.0, R_t: 7.1, R_0: 7.1, mu_psych_t: 1.5, K_pot_t: 1.0, K_pot_0: 1.0, K_soil: 1.2, K_comp: 0.9, K_base: 1.0, A_algo: 7.0, T: 2.0, T_effective: 2.0, challengability_score: 5.0, circle_opposition: 8.0, social_currency_t: 7.0 },
-                env: { surge_match: 5.0, current_direction: 5.0, terrain_passability: 5.0, population_density: 9.0, connectivity: 4.0, raw_suppression: 3.0, L_cognitive: 7.0, L_operational: 4.0, L_antipathy: 1.0, content_emotion_intensity: 7.0, audience_resonance_match: 9.0, environment_emotion_fit: 6.0 }
+                scores: { content_emotion_arousal: 3.0, social_currency_attr: 6.0, practical_value: 9.0, uniqueness: 6.0, innovation: 5.0, enhancement: 8.0, strangeness: 3.0, narrative_completeness: 9.0, remix_openness: 2.0, source_credibility: 9.0, personification: 4.0 },
+                meme: { social_currency: 6.0, share_cost: 5.0, audience_trust_base: 8.0, share_circle_preference: 5.0 },
+                field: { t: 0, C_t: 0.0, R_t: 4.5, R_0: 4.5, mu_psych_t: 3.2, K_pot_t: 0.9, K_pot_0: 0.9, K_soil: 0.8, K_comp: 0.5, K_base: 1.0, A_algo: 5.0, T: 3.0, T_effective: 2.4, challengability_score: 8.0, circle_opposition: 5.0, social_currency_t: 6.0 },
+                env: { surge_match: 4.0, current_direction: 4.0, terrain_passability: 7.0, population_density: 4.0, connectivity: 8.0, raw_suppression: 4.0, L_cognitive: 6.0, L_operational: 4.0, L_antipathy: 2.0, content_emotion_intensity: 3.0, audience_resonance_match: 5.0, environment_emotion_fit: 4.0 }
             }
         }
     };
 
+    // Seeded PRNG for deterministic grids
+    function seededRandom(seedStr) {
+        let h = 1540483477;
+        for (let i = 0; i < seedStr.length; i++) {
+            h = Math.imul(h ^ seedStr.charCodeAt(i), 1234567);
+        }
+        return function() {
+            h = Math.imul(h ^ (h >>> 15), 1234567);
+            return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
+        };
+    }
+
     async function start() {
         await init();
+        const runBtn = document.getElementById("run-btn");
+        const animBtn = document.getElementById("anim-btn");
+        const presetSelect = document.getElementById("preset-selector");
+        const customPanel = document.getElementById("custom-panel");
+        const visualizeBtn = document.getElementById("visualize-btn");
 
-        document.getElementById("run-btn").addEventListener("click", () => {
-            const preset_key = document.getElementById("preset-selector").value;
-            const target = presets[preset_key] || presets["video"];
-            
+        presetSelect.addEventListener("change", () => {
+            customPanel.style.display = presetSelect.value === "custom" ? "block" : "none";
+        });
+
+        runBtn.addEventListener("click", async () => {
+            if (animInterval) { clearInterval(animInterval); animInterval = null; }
             const max_ticks = parseInt(document.getElementById("ticks").value);
             const sigma = parseFloat(document.getElementById("sigma").value);
             const seed = BigInt(document.getElementById("seed").value);
 
+            let configJSON, scenarioJSON;
+            if (presetSelect.value === "custom") {
+                const raw = document.getElementById("custom-json").value.trim();
+                if (!raw) { alert("Please paste your custom JSON."); return; }
+                try {
+                    const parsed = JSON.parse(raw);
+                    if (!parsed.config || !parsed.scenario) {
+                        alert("Custom JSON must contain both 'config' and 'scenario' objects.");
+                        return;
+                    }
+                    configJSON = JSON.stringify(parsed.config);
+                    scenarioJSON = JSON.stringify(parsed.scenario);
+                } catch (e) {
+                    alert("Invalid JSON: " + e.message);
+                    return;
+                }
+            } else {
+                const target = presets[presetSelect.value];
+                if (!target) { alert("Preset not found."); return; }
+                configJSON = JSON.stringify(target.config);
+                scenarioJSON = JSON.stringify(target.scenario);
+            }
+
             try {
-                const result_string = simulate(
-                    JSON.stringify(target.config),
-                    JSON.stringify(target.scenario),
-                    max_ticks,
-                    sigma,
-                    seed,
-                    false
-                );
-
+                const result_string = simulate(configJSON, scenarioJSON, max_ticks, sigma, seed, false);
                 const records = JSON.parse(result_string);
+                lastRecords = records;
                 document.getElementById("json-output").textContent = JSON.stringify(records, null, 2);
-
-                drawGrid(records);
-                drawChart(records);
+                drawAll(records, max_ticks, seed.toString());
+                showDiagnostic(records);
+                animBtn.disabled = false;
             } catch (err) {
                 document.getElementById("json-output").textContent = "Simulation crashed: " + err;
             }
         });
+
+        animBtn.addEventListener("click", () => {
+            if (!lastRecords.length) return;
+            if (animInterval) clearInterval(animInterval);
+            let frame = 0;
+            animBtn.disabled = true;
+            document.getElementById("run-btn").disabled = true;
+            const seedBase = document.getElementById("seed").value.toString();
+            const maxTicks = lastRecords.length;
+            animInterval = setInterval(() => {
+                const slice = lastRecords.slice(0, frame + 1);
+                drawAll(slice, maxTicks, seedBase + frame);
+                frame++;
+                if (frame >= lastRecords.length) {
+                    clearInterval(animInterval);
+                    animInterval = null;
+                    animBtn.disabled = false;
+                    document.getElementById("run-btn").disabled = false;
+                }
+            }, 120);
+        });
+
+        // Visualize pasted results
+        visualizeBtn.addEventListener("click", () => {
+            const raw = document.getElementById("visualize-json").value.trim();
+            if (!raw) { alert("Paste some JSON first."); return; }
+            try {
+                let parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && parsed.records) {
+                    parsed = parsed.records;
+                }
+                if (!Array.isArray(parsed)) {
+                    alert("Pasted data must be an array of records or an object with a 'records' array.");
+                    return;
+                }
+                lastRecords = parsed;
+                document.getElementById("json-output").textContent = JSON.stringify(parsed, null, 2);
+                const maxTicks = parsed.length;
+                drawAll(parsed, maxTicks, "pasted");
+                showDiagnostic(parsed);
+                animBtn.disabled = false;
+            } catch (e) {
+                alert("Invalid JSON: " + e.message);
+            }
+        });
     }
 
-    function drawGrid(records) {
+    function drawAll(records, maxTicks, seedStr) {
+        const lastRecord = records[records.length - 1];
+        drawGrid(lastRecord, seedStr + "_grid");
+        drawChart(records, maxTicks);
+        drawMetrics(records, maxTicks);
+    }
+
+    function drawGrid(record, seedStr) {
         const canvas = document.getElementById("grid-canvas");
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        const last_record = records[records.length - 1];
-        const C_t = last_record.C_t;
-
-        const cells = 12;
+        if (!record) return;
+        const C_t = record.C_t;
+        const rand = seededRandom(seedStr);
+        const cells = 15;
         const size = canvas.width / cells;
         for (let x = 0; x < cells; x++) {
             for (let y = 0; y < cells; y++) {
-                const p = Math.random();
-                const active = p < C_t;
-
-                ctx.fillStyle = active ? `rgba(128, 90, 213, ${0.4 + C_t * 0.6})` : "#141a24";
+                const active = rand() < C_t;
+                ctx.fillStyle = active ? `rgba(167, 139, 250, ${0.3 + C_t * 0.7})` : "#141a24";
                 ctx.strokeStyle = "#1d2736";
                 ctx.fillRect(x * size, y * size, size, size);
                 ctx.strokeRect(x * size, y * size, size, size);
@@ -185,41 +327,115 @@
         }
     }
 
-    function drawChart(records) {
+    function drawChart(records, maxTicks) {
         const canvas = document.getElementById("chart-canvas");
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         const pad = 30;
         const w = canvas.width - pad * 2;
         const h = canvas.height - pad * 2;
-
         ctx.strokeStyle = "#4a5568";
         ctx.beginPath();
         ctx.moveTo(pad, pad); ctx.lineTo(pad, canvas.height - pad);
         ctx.lineTo(canvas.width - pad, canvas.height - pad);
         ctx.stroke();
-
-        if (records.length === 0) return;
-
-        const max_G = Math.max(...records.map(r => r.G), 2.0);
-        
+        if (!records.length) return;
+        const max_G = Math.max(...records.map(r => r.G || 0), 2.0);
         ctx.strokeStyle = "#a78bfa";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.beginPath();
+        const effectiveMaxTicks = maxTicks || records.length;
         records.forEach((r, idx) => {
-            const x = pad + (idx / (records.length - 1)) * w;
-            const y = canvas.height - pad - (r.G / max_G) * h;
+            const x = pad + (idx / (effectiveMaxTicks - 1)) * w;
+            const y = canvas.height - pad - ((r.G || 0) / max_G) * h;
             if (idx === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
-
-            ctx.fillStyle = "#f472b6";
-            ctx.beginPath();
-            ctx.arc(x, y, 4, 0, Math.PI * 2);
-            ctx.fill();
         });
         ctx.stroke();
     }
+
+    function drawMetrics(records, maxTicks) {
+        const canvas = document.getElementById("metrics-canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const pad = 35;
+        const w = canvas.width - pad * 2;
+        const h = canvas.height - pad * 2;
+        ctx.strokeStyle = "#4a5568";
+        ctx.beginPath();
+        ctx.moveTo(pad, pad); ctx.lineTo(pad, canvas.height - pad);
+        ctx.lineTo(canvas.width - pad, canvas.height - pad);
+        ctx.stroke();
+        if (!records.length) return;
+        const max_R = 10;
+        const max_C = 1.0;
+        const effectiveMaxTicks = maxTicks || records.length;
+        ctx.strokeStyle = "#f472b6";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        records.forEach((r, idx) => {
+            const x = pad + (idx / (effectiveMaxTicks - 1)) * w;
+            const y = canvas.height - pad - (r.R_t / max_R) * h;
+            if (idx === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        ctx.strokeStyle = "#a78bfa";
+        ctx.beginPath();
+        records.forEach((r, idx) => {
+            const x = pad + (idx / (effectiveMaxTicks - 1)) * w;
+            const y = canvas.height - pad - (r.C_t / max_C) * h;
+            if (idx === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        ctx.fillStyle = "#a78bfa";
+        ctx.font = "9px monospace";
+        for (let v = 0; v <= 1.0; v += 0.2) {
+            const y = canvas.height - pad - (v / max_C) * h;
+            ctx.fillText(`${(v*100).toFixed(0)}%`, canvas.width - pad + 5, y + 3);
+        }
+        ctx.fillStyle = "#f472b6";
+        for (let v = 0; v <= 10; v += 2) {
+            const y = canvas.height - pad - (v / max_R) * h;
+            ctx.fillText(v.toString(), pad - 18, y + 3);
+        }
+    }
+
+    function showDiagnostic(records) {
+        const first = records[0];
+        const last = records[records.length - 1];
+        const peak_G = Math.max(...records.map(r => r.G || 0));
+        const G = last.G || 0;
+        const Lambda = last.lambda_eff || 0;
+        let header = "", scan = "", action = "";
+
+        if (Lambda > 1.0 && G >= 1.0) {
+            header = "🟢 True Self-Growth";
+            scan = `Peak G=${peak_G.toFixed(1)}, C_t ended at ${(last.C_t*100).toFixed(1)}%.`;
+            action = `<div class="diagnostic-card"><span class="badge badge-green">Green</span> Good resonance. Try lowering <strong>L_cognitive</strong> to broaden reach.</div>`;
+        } else if (Lambda < 1.0 && G >= 1.0) {
+            header = "🟡 Pseudo Self-Growth";
+            scan = `Algorithm-driven exposure, Λ=${Lambda.toFixed(2)}.`;
+            action = `<div class="diagnostic-card"><span class="badge badge-yellow">Fix</span> Raise <strong>content_emotion_arousal</strong> or lower <strong>L_antipathy</strong>.</div>`;
+        } else if (Lambda > 1.0 && G < 1.0) {
+            header = "🔴 Choked";
+            scan = `Latent power blocked.`;
+            action = `<div class="diagnostic-card"><span class="badge badge-red">Fix</span> Reduce <strong>share_cost</strong> or <strong>L_operational</strong>.</div>`;
+        } else {
+            header = "💀 Decay";
+            scan = `No amplification.`;
+            action = `<div class="diagnostic-card"><span class="badge badge-red">Critical</span> Boost <strong>source_credibility</strong> and <strong>audience_trust_base</strong>.</div>`;
+        }
+
+        document.getElementById("interpretation-box").innerHTML = `<h4>${header}</h4><p>${scan}</p>${action}`;
+    }
+
+    window.copyForAI = function() {
+        if (!lastRecords.length) { alert("Run a simulation first!"); return; }
+        const prompt = `You are a Social Laser Dynamics analyst. Interpret these results and suggest one high-ROI action.\n\nTIMELINE:\n${JSON.stringify(lastRecords, null, 2)}`;
+        navigator.clipboard.writeText(prompt).then(() => alert("Copied!"));
+    };
 
     start();
 </script>

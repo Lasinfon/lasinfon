@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 
 use lasinfon_core::types::*;
+use lasinfon_core::formulas::exponent_layer::compute_lambda_and_exposure;
 use lasinfon_state::state_transfer::{tick, StateTransferParams};
 use rand::Rng;
 use rand_distr::{Distribution, Normal};
@@ -24,6 +25,8 @@ pub struct ForecastResult {
     pub lambda_val: f64,
     pub lambda_eff: f64,
     pub G: f64,
+    pub G_std: f64,         // SRP standard exposure output (G_std)
+    pub K_mult: f64,        // Dynamic environmental multiplier (K_mult)
     pub W: f64,
     pub growth_level: String,
     pub exposure_level: String,
@@ -127,7 +130,7 @@ pub fn run_ensemble_forecast(
                 let K_base = K_pot * K_soil * K_comp * K_niche;
                 let K = K_base * field.A_algo;
 
-                let (lambda_val, lambda_eff, G) = lasinfon_core::formulas::exponent_layer::compute_lambda_and_exposure(
+                let (lambda_val, lambda_eff, G) = compute_lambda_and_exposure(
                     R, omega, mu_psych, epsilon,
                     field.C_t, E, K, S,
                     alpha, gamma_sat,
@@ -147,6 +150,24 @@ pub fn run_ensemble_forecast(
                     trust_weights.w_audience,
                 );
 
+                // ── Calculate Standard Reference Projection (SRP) ──
+                let std_k = 1.0;
+                let std_omega = 0.0;
+                let std_epsilon = 0.0;
+                let (_std_lambda_val, _std_lambda_eff, G_std) = compute_lambda_and_exposure(
+                    R, std_omega, mu_psych, std_epsilon,
+                    field.C_t, E, std_k, S,
+                    alpha, gamma_sat,
+                );
+
+                // ── Division-by-Zero Defense Guardrail (EPSILON protection) ──
+                const EPSILON: f64 = 1e-5;
+                let K_mult = if G_std < EPSILON {
+                    1.0
+                } else {
+                    G / G_std
+                };
+
                 let exposure = ExposureResult { lambda_val, lambda_effective: lambda_eff, G };
                 let next_field = tick(field, &exposure, E, st_params);
 
@@ -160,6 +181,8 @@ pub fn run_ensemble_forecast(
                     lambda_val,
                     lambda_eff,
                     G,
+                    G_std,
+                    K_mult,
                     W,
                     growth_level: format!("{:?}", growth),
                     exposure_level: format!("{:?}", exposure_level),
