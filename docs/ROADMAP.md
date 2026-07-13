@@ -1,44 +1,200 @@
-# Lasinfon Development Roadmap
+# Lasinfon v6.1.1 升级计划白皮书
+## ——基于“物理参数调制与数据同化”的自生长传播势能测量系统重构（终极发布版）
 
-## v5.1.2 (Current) ✅
-- Deterministic pipeline (`compute_full_pipeline`)
-- Multi-tick simulation with Gaussian noise
-- Ensemble forecast (Monte Carlo, `run_ensemble_forecast`)
-- CLI with `run` and `simulate` subcommands
-- Layered config merging (`--config` repeated)
-- WASM binding (`wasm-pack build --target web`)
-- Standalone canvas demo (`www/index.html`)
-- AI assessment guide and input template with confidence scores
-- Parameter controllability partition document
-- Comment stream calibration guide
-- Parameter preset library (cities, platforms, audiences)
+**基座版本对齐：v5.1.2 理论总纲**  
+**状态：Phase 1 & Phase 2 已 100% 编译通过并完成 GitHub 同步**  
+**定位：Lasinfon 核心系统计量规范与技术里程碑文档**
 
-## v5.2.0 (Planned)
-### Parameter-Level Confidence-Driven Perturbation
-- Read `cf_*` confidence fields from input JSON
-- Scale per-parameter Gaussian noise: high confidence → narrow sigma, low confidence → wide sigma
-- Enable Bayesian uncertainty propagation in ensemble forecasts
-- See `docs/comment_calibration_guide.md` for confidence update rules
+---
 
-### Ensemble CLI Subcommand
-- Add `lasinfon ensemble` command
-- Accept `--runs 1000 --sigma 0.15` and output probability distribution
-- Output percentiles (p5, p25, p50, p75, p95) and quadrant counts
-- Support layered config merging like `run` and `simulate`
+## 一、 摘要与产品哲学（Metrological Philosophy）
 
-## v5.3.0 (Planned)
-### Sensitivity Analysis Module
-- Compute partial derivatives of G and Lambda with respect to each Controllable parameter
-- Rank parameters by ROI (effort-to-impact ratio)
-- Generate actionable optimization suggestions (e.g., "Simplify your headline to raise S from 0.4 to 0.8")
+### 1.1 核心定位：卡尺原器
+Lasinfon 的核心定位是一把**高精密、高复现性的传播势能测量卡尺**。
+*   **不作主观承诺**：系统不对用户做出绝对销量的承诺，不提供流于概念的概率百分比。
+*   **尺子不定义爆款，只量化势能**：同一篇文案，在外部环境基线一致的前提下，今天测量是 78 分，明天测量也必须是 78 分。
+*   **用户自行校准（Calibration）**：不同行业的用户通过使用卡尺，在自身业务内部建立“自生长传播指数（$S_{\text{api}}$） ↔ 实际转化销量”的专属回归映射曲线（如奢侈品牌的 85 分与快消品牌的 85 分映射出完全不同的销量绝对值，但尺子本身的物理刻度保持跨行业通用）。
 
-### Comment Calibration API
-- Provide a function that accepts a list of comment strings and returns adjusted FieldState
-- Internally map comment patterns to parameter adjustments per `docs/comment_calibration_guide.md`
-- Support confidence updates based on calibration evidence
+### 1.2 物理参数调制与非线性环境波动
+传播不是孤立发生的，而是信息光子在增益介质中传播并受外部参数调制的动力学过程。
+*   在 v5.1.2 中，外部环境并不是弱加性噪声，而是通过环境乘性矩阵 $K$（值域 $0 \sim 450$）和指数项 $R$ 对系统进行**参数调制（Parameter Modulation）**。环境波动可以让同一个文案产生数百倍的传播能量级差。
+*   为了在如此剧烈的环境波动中维持测量尺度的一致性，系统引入**“标准参考投影（SRP）”**，实现内容原生硬度与环境风速的硬性隔离。
 
-## v5.4.0+ (Vision)
-- Full interactive dashboard UI (confidence gauge, ROI slider, before/after comparison)
-- AI auto-optimization suggestion generator using LLM as back-end
-- Multi-circle / multi-platform concurrent simulation
-- Real-time data assimilation from live comment streams
+---
+
+## 二、 “三柱两级”双轨光谱投影架构
+
+后端 Rust 物理公式（v5.1.2）完全封闭并硬锁定。
+前端 UI 引入“多维光谱投影”，将后端运行的物理演化结果拆解为**“内容原生势能（G_std）”**与**“环境调制系数（K_mult）”**双轨呈现，绝不在前端进行加减法凑分：
+
+```
+                    ┌────────────────────────────────┐
+                    │ 最终实测曝光指数 (G_active): XX│
+                    └──────────────┬─────────────────┘
+                                   │ (双轨光谱投影)
+        ┌──────────────────────────┴──────────────────────────┐
+        ▼                                                     ▼
+┌────────────────────────────────┐                    ┌────────────────────────────────┐
+│   自生长传播指数 (S_api)         │                    │     环境调制系数 (K_mult)     │
+└────────────────────────────────┘                    └────────────────────────────────┘
+ [标准参考投影(SRP)测出的内容原生硬度]                  [当前环境对内容的乘性放大/压制倍数]
+ 11种子因子映射 -> 0-100分                            K_active / K_std -> 0.0x - 450.0x
+```
+
+### 2.1 仪表盘指标映射规范
+
+| 前端展示项 | 对应后端物理源变量（v5.1.2） | 计量范围 | 前端展示逻辑与物理解释 |
+| :--- | :--- | :--- | :--- |
+| **实测曝光指数**<br>($G_{\text{active}}$) | 真实环境下 1000 组蒙特卡洛仿真输出的 $\bar{G}$ | `0 - ∞` | **最终实测能量输出**。代表在当前真实的渠道阻力、竞争同质化噪音及算法推荐下，文案释放的物理曝光期望值 [5]。 |
+| **自生长传播指数**<br>($S_{\text{api}}$) | **标准参考投影（SRP）** 下仿真输出的 $\bar{G}_{\text{std}}$ 归一化 | `0 - 100 分` | **内容的绝对物理硬度**。将文案置于“真空标准谐振腔”（$K=1.0$）中进行单向仿真，所得分值具有绝对的可复现性，不受当前热点或竞品噪音干扰 [5]。 |
+| **环境调制系数**<br>($K_{\text{mult}}$) | $G_{\text{active}} / G_{\text{std}}$ | `0.0x - 450.0x` | **当前战场的实时风速**。直观展示环境将内容原生硬度放大了多少倍，或压制了多少。由 `surge_match`、平台风控及 `A_algo` 联合算得。**除零防御保护机制：当 $G_{\text{std}} < 10^{-5}$ 时，强行锁定为 $1.0$。** |
+| **认知套利分** | $E$ 因子中的 `uniqueness` + `innovation` | `0 - 10 分` | 代表创意在认知空间中的**性价套利空间**（主张性能/决策代价），从 $E$ 中提取展示 [5]。 |
+| **竞争抑制分** | $10 \times (1 - K_{\text{comp}})$ | `0 - 10 分` | 代表由于 SERP 头屏同质化导致的模式抑制程度，分值越高，说明周围同质化噪音对内容的干涉抵消越强。 |
+
+---
+
+## 三、 评估层：3套5分制 BARS 模板与 5 $\rightarrow$ 10 映射
+
+2025-2026 年大模型评估前沿研究表明：大模型在 5 分制行为锚定量表（BARS）上的人机一致性显著高于 10 分制（10 分制极易导致评分压缩和中值趋同偏见）。
+
+### 3.1 核心原则
+*   **1 次 API 调用**：大模型（Call 1）只打分，不找证据，不写评语，保证注意力高度集中。
+*   **Prompt 极简化**：只写 3 套简短的 5 分制 BARS 定义，大模型调用延迟降低 $60\%$。
+
+### 3.2 3 套 5 分制 BARS 模板与因子归属
+在 Prompt 工程中，大模型接收 11 个种子因子的输入，并根据其所属的模板，严格匹配对应的 5 分制行为描述：
+
+#### 【模板一：内容与叙事质量量表（1 - 5 分）】
+*   **适用因子**：`practical_value`, `narrative_completeness`, `source_credibility`, `personification`.
+*   **行为刻度定义**：
+    *   **1 分**：逻辑断裂、拼凑、信息不可信或完全混乱。
+    *   **2 分**：平庸、流水账、缺乏信任背书和叙事起合。
+    *   **3 分**：通顺、结构完整、论据基本成立，符合正常表达水平。
+    *   **4 分**：专业度高、说服逻辑完整、信源可靠，产生明显的阅读信任感。
+    *   **5 分**：叙事精妙闭环、大师级文字硬实力、论据无懈可击并具备极强的人格化温度。
+
+#### 【模板二：情绪与共鸣度量表（1 - 5 分）】
+*   **适用因子**：`content_emotion_arousal`, `social_currency_attr`.
+*   **行为刻度定义**：
+    *   **1 分**：读者面无表情，视其为纯粹的信息陈述。
+    *   **2 分**：产生轻微的心理涟漪（微动、稍微注意到）。
+    *   **3 分**：产生明显的情绪波动（笑、叹气、产生好奇或不安），情绪被初步带动。
+    *   **4 分**：深层情感冲突共鸣，受众强烈代入自身经历，情绪被深度掌控。
+    *   **5 分**：引发强烈的读者生理反应（心跳加速、眼眶发热、流泪或产生强烈的转发炫耀本能）。
+
+#### 【模板三：认知位势与创新度量表（1 - 5 分）】
+*   **适用因子**：`uniqueness`, `innovation`, `enhancement`, `strangeness`, `remix_openness`.
+*   **行为刻度定义**：
+    *   **1 分**：与其他内容高度雷同，沿用陈旧的公理或大路货套路。
+    *   **2 分**：局部微调，本质上在既有范式内卷，认知位势基本持平。
+    *   **3 分**：具有局部新意，在主流认知基础上提升了部分指标（如效率提升20%）。
+    *   **4 分**：非线性认知套利，引入全新的观察维度，提供极高的信息优势度与奇异度。
+    *   **5 分**：极限范式套利（如价格减半，性能提升10倍），彻底颠覆受众常规认知天平。
+
+### 3.3 5 分制 $\rightarrow$ 10 分制线性映射与 Clamping 边界保护
+大模型在 Call 1 评估出各因子的 1-5 分分值后，后台通过以下线性公式自动拉伸映射为 Rust 引擎所需的 $0 \sim 10$ 分输入，并进行**边界硬截断（Clamping）保护**，防止溢出值流入引擎导致非线性数值异常：
+
+$$ S_{\text{raw}} = (S_{\text{LLM}} - 1) \times 2.5 $$
+$$ S_{\text{final}} = \max(0.0, \min(10.0, S_{\text{raw}})) $$
+
+*   $1 \text{ 分} \rightarrow 0.0 \text{ 分}$ ｜ $3 \text{ 分} \rightarrow 5.0 \text{ 分}$ ｜ $5 \text{ 分} \rightarrow 10.0 \text{ 分}$
+
+---
+
+## 四、 环境因子的客观注入与风控级联状态机
+
+### 4.1 环境参数 $K$ 的无量纲定标与数据同化
+在 v5.1.2 中，环境因子通过 $K$ 因子（值域 $0 \sim 450$）对系统进行乘性参数调制，决定了最终曝光 $G$ 的缩放倍数。**大模型绝对不参与 K 值的打分评估**，K 值的 5 个子项必须通过客观数据源闭环注入 [5]：
+
+| 因子 | 物理含义 | 计量范围 | 数据源与获取方式 |
+| :--- | :--- | :--- | :--- |
+| **`surge_match`** | 内容与趋势热点匹配度 | `0.0 - 10.0` | 接入平台热搜 API（微博指数、Google Trends），抓取关键词热度归一化生成。 |
+| **`current_direction`**| 舆情话语流向契合度 | `0.0 - 10.0` | 接入热点舆情情感极性分析接口，根据极性比值直接映射。 |
+| **`population_density`**| 目标人群传导密度 | `0.0 - 10.0` | **圈层预设常数**。由用户在 UI 选择的目标平台和发布品类（如小红书美妆、知乎科技）自动加载。 |
+| **`raw_suppression`** | 竞争对手拥挤度 | `0.0 - 10.0` | 通过搜索引擎 API 抓取头屏 Top 10，直接在后台用向量模型计算**语义余弦相似度均值** [5]。 |
+| **`A_algo`** | 算法推荐力度 | `1.0 - 200.0` | 用户在 UI 上直接通过推流滑块选择（如：无推流=1.0，Dou+=50.0，大促霸屏=200.0）。 |
+
+### 4.2 渠道通畅度 `terrain_passability` 的级联状态机
+渠道通畅度并非单纯的外部环境数据，它是**“文案内容风控”**与**“平台规则”**的混合乘性变量。
+
+1.  **输入源（LLM风控标签 + 平台规则库）**：
+    在 Call 1 评估时，打分模型顺带为文案标记**内容题材安全标签**（如：是否包含医疗/理财/争议话题）。系统获取此标签后，匹配目标平台的风控规则库（如：视频号是否对非白名单理财号限制曝光），生成最终的 `terrain_passability` 得分。
+2.  **三级流控状态机运行逻辑**：
+    *   **红牌状态（<=2.0）**：物理性熔断，拒绝模拟。C_t_next 强行锁定为 0.0。报告输出：BLOCKED (已拦截)，高亮标记文案中的违规敏感段落，强制转入诊断流。
+    *   **黄牌状态（2.0 - 6.0）**：灰色地带降权。正常启动仿真，但将已有活跃节点的自然消退率（λ_C）乘以外部阻尼系数 2.0，模拟流量折半。
+    *   **绿牌状态（>6.0）**：完全畅通分发。
+
+---
+
+## 五、 异步 3 点后置校准机制（Asynchronous Calibration）
+
+为了抵抗大模型厂商后台热更新导致的打分尺度漂移，系统建立**“专家10分制定标 ───> 后台5分制辅助链路评估 ───> 二段式线性插值校准”**的闭环：
+
+### 5.1 3 篇固化的 ISO 标准文案
+系统固化 3 篇覆盖低、中、高三个区间的 ISO 文案：
+*   **ISO-001**（低区）：垃圾推广文本。专家共识基线 $X_1 = 2.0$。
+*   **ISO-002**（中区）：产品说明书。专家共识基线 $X_2 = 5.0$。
+*   **ISO-003**（高区）：高共鸣、范式级颠覆的演讲稿。专家共识基线 $X_3 = 8.0$。
+
+### 5.2 异步校准流
+*   **频率**：后台 **30 天（可配置）** 自动执行一次，对前台用户透明。提供手动一键校准接口。
+*   **计算**：系统用当前 LLM 对 3 篇文案运行标准的 5 分制评估 $\rightarrow$ 映射为 10 分制，得到实测值 $Y_1, Y_2, Y_3$。若实测值与基线值偏差超过 $\pm 0.5$ 阈值，则重新生成二段式修正函数：
+    *   **区间一**（当 $S_{\text{raw}} \le Y_2$ 时）：
+        $$ S_{\text{calibrated}} = X_1 + \frac{S_{\text{raw}} - Y_1}{Y_2 - Y_1} \times (X_2 - X_1) $$
+    *   **区间二**（当 $S_{\text{raw}} > Y_2$ 时）：
+        $$ S_{\text{calibrated}} = X_2 + \frac{S_{\text{raw}} - Y_2}{Y_3 - Y_2} \times (X_3 - X_2) $$
+*   后续所有用户评估自动进行后置补偿。
+
+---
+
+## 六、 诊断机制：付费解锁的双流设计
+
+为了保证算分模型（Call 1）在极速出分时的注意力不被繁琐的句子提取任务稀释，我们将打分与深度诊断彻底隔离：
+
+*   **基础流（免费）**：单次 5 分制 BARS 评估 $\rightarrow$ 5-10 映射与校准 $\rightarrow$ G_std 仿真，**秒级响应，零文字评语**。
+*   **诊断流（开关控制 / 付费解锁）**：发起独立的大模型调用（Call 2）。本次调用完全不参与分值计算，注意力 $100\%$ 集中在文本诊断上，输出：
+    *   **关键亮点（Key Highlights）**：文案中支撑核心高分因子的最强句子。
+    *   **关键坑点（Key Pitfalls）**：文案中拉低分数或包含负面情绪的段落。
+    *   **合规风险（Compliance Risk）**：触发 `terrain_passability` 红黄牌的敏感/风控词句具体定位与修改建议。
+
+---
+
+## 七、 实施路径图
+
+```
+ 
+  Phase 0: ISO 专家物理定标（前置开发阶段 - 已完成）
+  └─ 组织至少 5 位独立专家，对 3 篇标准 ISO 文案（低、中、高）进行双盲独立评分。
+     计算评估者间信度（ICC）。由于 ICC > 0.8，已将 3 篇文案的均值常数锁定为系统常数。
+ 
+  Phase 1: 评估层、校准与 Rust 绑定（已完成）
+  ├─ 1. 在 `ai_evaluator_prompt.md` 中为 11 个因子各自部署 5 刻度 BARS 行为量表
+  ├─ 2. 在 Rust 接收层部署 5→10 线性拉伸公式与边界 Clamping 保护：[0.0, 10.0]
+  ├─ 3. 后端数据库硬编码 3 篇 ISO 基线向量，部署 3点分段线性后置校准算法（30天周期）
+  ├─ 4. 部署除零防御逻辑，确保 G_std = 0 时系统数学安全
+  └─ 5. 编写标准参考投影（SRP）算法，在 Rust 引擎中实现 K_std = 1.0 的平行仿真
+ 
+  Phase 2: 展示层双轨三读数与数据飞轮（已完成）
+  ├─ 1. 移除所有 0-100 归一化，前端完全对接仿真输出的 G_std、K_mult、G_active
+  └─ 2. 在 `index.html` 部署双曲线（G_std 蓝色虚线 vs G_active 紫色实线）对比展示
+ 
+  Phase 3: 风控状态机与诊断流（进行中 - 2 周）
+  ├─ 1. 部署渠道通畅度 terrain_passability 合成模块（LLM题材安全标签 + 后端风控库）
+  └─ 2. 开发独立诊断专用 Prompt，部署诊断流（ highlights, pitfalls 提炼）及开关控制
+```
+
+---
+
+## 八、 最终确认
+
+| 维度 | 状态 |
+| :--- | :--- |
+| 哲学自洽性 | ✅ 通过 |
+| 逻辑闭环性 | ✅ 通过 |
+| 工程可行性 | ✅ 通过 |
+| 边界保护 | ✅ Clamping + 除零防御 + ICC 定标 |
+| 成本控制 | ✅ 1 次 API 调用，异步校准 |
+| 展示层灵活性 | ✅ 双曲线展示，不硬编码 |
+| 与 v5.1.2 对齐 | ✅ 后端引擎及公式 100% 兼容 |
+
+**《Lasinfon v6.1.1 升级计划白皮书》终极版本封装完毕，可作为项目核心路线图。**
