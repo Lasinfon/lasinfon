@@ -9,6 +9,7 @@ use output_types::{RunOutput, SimulateOutput, FieldNext};
 use builders::*;
 use lasinfon_core::types::*;
 use lasinfon_core::formulas::pipeline::{compute_full_pipeline, PipelineOutput};
+use lasinfon_core::formulas::exponent_layer::compute_lambda_and_exposure;
 use lasinfon_state::state_transfer::{self, StateTransferParams};
 use lasinfon_state::simulation::{run_simulation, SimulationConfig};
 use lasinfon_config::{load_merged_configs, validate_config};
@@ -86,6 +87,35 @@ fn run_command(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
         config.system.alpha, config.stochastic.gamma_saturation,
     );
 
+    // ── Calculate Standard Reference Projection (SRP) ──
+    // SRP represents standard vacuum cavity where:
+    // - Environmental gain K_std is forced to 1.0 (neutral conditions)
+    // - Threat is zero, meaning standard Q-switch omega_std is 0.0
+    // - Quantum fluctuation epsilon is 0.0 (baseline projection)
+    let std_k = 1.0;
+    let std_omega = 0.0;
+    let std_epsilon = 0.0;
+    let (_std_lambda_val, _std_lambda_eff, G_std) = compute_lambda_and_exposure(
+        output.R,          // Keep resonance heat (intrinsic content-audience property)
+        std_omega,         // Standard omega = 0.0
+        output.mu_psych,   // Keep psychological friction (intrinsic content-audience property)
+        std_epsilon,       // Standard epsilon = 0.0
+        field.C_t,         // Keep active node ratio
+        output.E,          // Keep computed seed potential
+        std_k,             // Standard environment K = 1.0
+        output.S,          // Keep physical conductance
+        config.system.alpha,
+        config.stochastic.gamma_saturation,
+    );
+
+    // ── Division-by-Zero Defense Guardrail (EPSILON protection) ──
+    const EPSILON: f64 = 1e-5;
+    let K_mult = if G_std < EPSILON {
+        1.0
+    } else {
+        output.G / G_std
+    };
+
     let exposure = ExposureResult {
         lambda_val: output.lambda_val,
         lambda_effective: output.lambda_eff,
@@ -104,6 +134,8 @@ fn run_command(args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
         lambda_val: output.lambda_val,
         lambda_eff: output.lambda_eff,
         G: output.G,
+        G_std,
+        K_mult,
         W: output.W,
         growth_level: format!("{:?}", output.growth_level),
         exposure_level: format!("{:?}", output.exposure_level),
