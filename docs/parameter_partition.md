@@ -1,4 +1,4 @@
-# Parameter Controllability Partition
+# Parameter Controllability Partition v6.1.1
 
 All input parameters are classified into three zones based on the user's ability to modify them. This partition is critical for generating actionable optimization suggestions—only parameters in the "Controllable" zone can be tuned by the content creator.
 
@@ -8,7 +8,7 @@ Parameters that the content creator can directly change through editing, rewriti
 
 | Parameter | Location | What to Change |
 | :--- | :--- | :--- |
-| **Seed Potential E** (all 19 factors) | `scores.*` | Rewrite content: increase emotion arousal, add practical value, improve narrative structure, enhance uniqueness/strangeness, add credible sources, add personal touch. |
+| **Seed Potential E** (all 11 factors) | `scores.*` | Rewrite content: increase emotion arousal, add practical value, improve narrative structure, enhance uniqueness/strangeness, add credible sources, add personal touch. |
 | **L_cognitive** | `env.L_cognitive` | Simplify language, use concrete examples, reduce jargon. |
 | **L_operational** | `env.L_operational` | Add one-click share buttons, remove unnecessary interaction steps. |
 | **L_antipathy** | `env.L_antipathy` | Soften controversial phrasing, add disclaimers, use humor to defuse tension. |
@@ -33,8 +33,8 @@ Parameters that are determined by the macro environment, platform policy, or com
 | Parameter | Location | Nature |
 | :--- | :--- | :--- |
 | **K_pot** (environmental potential) | `field.K_pot_t` | Social mood, seasonal trends, news cycle—large-scale forces outside individual control. |
-| **K_comp** (competition crowding) | `field.K_comp` | Number of competing content pieces vying for the same audience. |
-| **K_soil** (population × connectivity base) | `field.K_soil` | Inherent structural property of the platform. |
+| **K_comp** (competition crowding) | `field.K_comp` | Number of competing content pieces vying for the same audience. Sourced from SERP top 10 semantic similarity. |
+| **K_soil** (population × connectivity base) | `field.K_soil` | Inherent structural property (population transmission coefficient / medium density base) of the platform. |
 | **T** (threat index) | `field.T` | Platform censorship or regulatory pressure. |
 | **T_effective** (effective threat) | `field.T_effective` | Net suppressive force after factoring in parasitic protection. |
 | **Ω** (Q-switch) | auto-calculated | Triggered by extreme suppression + high resonance; cannot be manually controlled. |
