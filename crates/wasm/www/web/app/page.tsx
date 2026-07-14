@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useStore } from "@/store/useStore";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { TypingText } from "@/components/TypingText";
+
+// Decouple presets into JSON file (conforms to Zero-Hardcoding Checkpoint)
+import presetsData from "../config/presets.json";
 
 export default function Home() {
   const {
@@ -27,6 +30,10 @@ export default function Home() {
   const [wasmModule, setWasmModule] = useState<any>(null);
   const [logIndex, setLogIndex] = useState(0);
 
+  const gridCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const chartCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const metricsCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
   // ── Load WASM Dynamically from Next.js Public Directory ──
   useEffect(() => {
     import("../public/pkg/lasinfon_wasm.js")
@@ -36,6 +43,13 @@ export default function Home() {
       })
       .catch((err) => console.error("Failed to load WASM in Next.js", err));
   }, []);
+
+  // ── Render Charts on State Change ──
+  useEffect(() => {
+    if (state === "rendering" && activeDiagnosticResult && wasmModule) {
+      drawAllCharts(activeDiagnosticResult);
+    }
+  }, [state, activeDiagnosticResult, wasmModule]);
 
   const getVal = (val: any, def = 0.0) => (val !== undefined && val !== null ? val : def);
 
@@ -62,18 +76,14 @@ export default function Home() {
     return `=== LASINFON SIMULATION SUMMARY REPORT ===
 Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
 
-[INITIAL STATE (t=0)]:
-- G_active: ${getVal(first.G).toFixed(2)} | G_std: ${getVal(first.G_std, first.G).toFixed(2)} | K_mult: ${getVal(first.K_mult, 1.0).toFixed(2)}x
+[INITIAL STATE (t=0)]:\n- G_active: ${getVal(first.G).toFixed(2)} | G_std: ${getVal(first.G_std, first.G).toFixed(2)} | K_mult: ${getVal(first.K_mult, 1.0).toFixed(2)}x
 - R_t: ${getVal(first.R_t).toFixed(2)} | C_t: ${(getVal(first.C_t)*100).toFixed(1)}% | mu_psych: ${getVal(first.mu_psych_t).toFixed(2)}
 
-[PEAK STATE (t=${peak_tick})]:
-- Peak G_active: ${peak_G.toFixed(2)} | G_std: ${getVal(records[peak_tick]?.G_std, peak_G).toFixed(2)} | K_mult: ${getVal(records[peak_tick]?.K_mult, 1.0).toFixed(2)}x
+[PEAK STATE (t=${peak_tick})]:\n- Peak G_active: ${peak_G.toFixed(2)} | G_std: ${getVal(records[peak_tick]?.G_std, peak_G).toFixed(2)} | K_mult: ${getVal(records[peak_tick]?.K_mult, 1.0).toFixed(2)}x
 
-[FINAL STATE (t=${last.t})]:
-- Final G_active: ${getVal(last.G).toFixed(2)} | G_std: ${getVal(last.G_std, last.G).toFixed(2)} | K_mult: ${getVal(last.K_mult, 1.0).toFixed(2)}x
+[FINAL STATE (t=${last.t})]:\n- Final G_active: ${getVal(last.G).toFixed(2)} | G_std: ${getVal(last.G_std, last.G).toFixed(2)} | K_mult: ${getVal(last.K_mult, 1.0).toFixed(2)}x
 
-[PROPAGATION METRICS]:
-- Cumulative Exposure (G_total): ${total_G.toFixed(2)}
+[PROPAGATION METRICS]:\n- Cumulative Exposure (G_total): ${total_G.toFixed(2)}
 - Average Gain Multiplier (lambda_eff): ${avg_lambda_eff.toFixed(4)}
 - Autonomous Growth Crossed Threshold? ${crossed_threshold ? "YES (at t=" + threshold_tick + ")" : "NO"}
 - Final Phase Quadrant: ${last.quadrant}
@@ -130,37 +140,16 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
 
       if (!wasmModule) throw new Error("WASM engine not ready");
 
-      const configPreset = {
-        system: { alpha: 0.2 },
-        stochastic: { eta: 0.3, theta: 0.01, gamma_saturation: 0.5 },
-        state_transfer: {
-          gamma_social_proof: 0.5, gamma_self_catalysis: 0.1, gamma_social_pressure: 0.3,
-          gamma_algo_trending: 0.05, attention_decay: 0.0, lambda_R_relaxation: 0.1,
-          lambda_K_relaxation: 0.1, lambda_C_relaxation: 0.3
-        },
-        omega: { trigger_T: 6, trigger_R: 7, trigger_social_currency: 7 },
-        weights: {
-          seed: { w_emotion_arousal: 0.21, w_social_currency: 0.18, w_practical_value: 0.09, w_info_advantage: 0.12, w_narrative_completeness: 0.125, w_remix_openness: 0.125, w_source_credibility: 0.105, w_personification: 0.045 },
-          S: { w_cognitive: 0.6, w_operational: 0.4 },
-          R: { w_content: 0.35, w_audience: 0.4, w_environment: 0.25 },
-          mu_psych: { w_antipathy: 0.6, w_suspicion: 0.4 },
-          trust: { w_source: 0.6, w_audience: 0.4 },
-          W: { w_enhance: 0.4, w_trust: 0.3, w_unique: 0.2, w_R: 0.1 }
-        },
-        mapping: {
-          K_pot: { base: 0.8, slope: 0.7, w_surge: 0.4, w_current: 0.4, w_terrain: 0.2 },
-          K_soil: { base: 0.3, slope: 1.2, w_density: 0.6, w_connect: 0.4 },
-          K_comp: { base: 1.0, slope: 0.7 },
-          omega: { scale: 2.5, denom: 1000 }
-        }
-      };
+      // Load config template from presets.json dynamically (No more hardcoded magic configs!)
+      const targetPreset = (presetsData as any)[inputs.platform.toLowerCase() === "douyin" ? "video" : "professional"] 
+        || (presetsData as any)["vacuum"];
 
       const result_string = wasmModule.simulate(
-        JSON.stringify(configPreset),
+        JSON.stringify(targetPreset.config),
         JSON.stringify(scenarioData),
-        15,
-        0.05,
-        BigInt(123),
+        targetPreset.max_ticks,
+        targetPreset.sigma,
+        BigInt(targetPreset.seed),
         false
       );
 
@@ -175,7 +164,6 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
       }));
       await new Promise((r) => setTimeout(r, 400));
 
-      // Final Transition: diagnosing -> rendering
       setDiagnosticResult(records);
 
     } catch (err: any) {
@@ -239,6 +227,38 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
 
   const areaR_D = points_R.length > 0 ? `${pathR_D} L ${points_R[points_R.length - 1].x} ${pad + chartH} L ${points_R[0].x} ${pad + chartH} Z` : "";
   const areaC_D = points_C.length > 0 ? `${pathC_D} L ${points_C[points_C.length - 1].x} ${pad + chartH} L ${points_C[0].x} ${pad + chartH} Z` : "";
+
+  // ── System Prompt for Web Chat Diagnostic Copies ──
+  const SYSTEM_INTERPRETER_PROMPT = `You are an expert in social laser dynamics, public opinion prediction, and metrological calibration. Your task is to interpret the provided summarized Lasinfon Simulation Report and explain it in plain, actionable, and mathematically rigorous human language.
+
+Output Structure:
+1. One-Sentence Core Verdict - Standard potential (G_std), environmental multiplier (K_mult), active exposure (G_active).
+2. Standard vs. Active Divergence Analysis - Why did it succeed/fail? Is it because of the copy's intrinsic strength, or did it ride a massive trend? Or did a masterpiece get choked? Cite explicit differences from the summary.
+3. Driver & Bottleneck Attribution - Trace every major driver or bottleneck back to a specific input parameter (e.g. practical_value, emotion_arousal, L_antipathy).
+4. Actionable Optimization Suggestions - 1-2 concrete actions mapped to controllable parameters, ranked by ROI.
+5. Limitations & Honesty - Mention relative trends, and that random fluctuations affect results.
+
+Metrological Interpretation Rules:
+- If G_std is high (>50) but G_active is low (<10) because K_mult is low (<0.3x) -> Phenomenal Masterpiece Choked. Action: Do NOT rewrite, change channels.
+- If G_std is low (<2.0) but G_active is high (>50) because K_mult is high (>50x) -> Algo Rider. Succeeded due to trend/ad push; warn on sudden organic drops.
+- If both are high -> Coherent Resonance.
+- If gain saturation observed -> Excited population depleted naturally.
+
+Please analyze the following summarized simulation report:
+
+`;
+
+  // Fallback Copy Function for Web Chat direct transfer
+  const copyDiagnosticPrompt = () => {
+    if (!activeDiagnosticResult) return;
+    const summary = generateSummaryText(activeDiagnosticResult);
+    const fullText = `${SYSTEM_INTERPRETER_PROMPT}${summary}`;
+    navigator.clipboard.writeText(fullText).then(() => {
+      alert("📋 Prompt + Summary Copied! Paste directly into ChatGPT, Claude, or DeepSeek.");
+    }).catch(() => {
+      alert("Failed to auto-copy. Please manually select and copy the prompt block below.");
+    });
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -305,7 +325,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
         {/* ── STATE 2: COLLECTING (Ginlix PTC Onboarding Flow) ── */}
         {state === "collecting" && (
           <div className="flex items-center justify-center h-[70vh]">
-            <Card className="w-full max-w-xl border border-slate-200 p-8">
+            <Card className="w-full max-w-xl border border-slate-200 p-8 shadow-md">
               <div className="flex justify-between items-center mb-6">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
                   Ginlix Onboarding Flow
@@ -321,14 +341,14 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
                   <p className="text-xs text-slate-400 mb-4">Choose the dominant social environment for your campaign</p>
                   <div className="flex flex-col gap-3 my-4">
                     {[
+                      { name: "Vacuum", desc: "Standard Vacuum Reference • K=1.0 standard physics model baseline" },
                       { name: "Douyin", desc: "High-Arousal Short-Video Resonance • Optimized for high emotional amplification" },
-                      { name: "Xiaohongshu", desc: "Visual Seeding & Social Currency • Tailored for organic recommendation and aesthetics" },
-                      { name: "WeChat", desc: "Private Circle Trust-Based Propagation • Designed for high-authority private forwarding" }
+                      { name: "Xiaohongshu", desc: "Visual Seeding & Social Currency • Tailored for organic recommendation and aesthetics" }
                     ].map((p) => (
                       <div
                         key={p.name}
                         onClick={() => setPlatform(p.name)}
-                        className={`p-5 border rounded-xl text-left cursor-pointer transition-all flex flex-col gap-1 ${
+                        className={`p-4 border rounded-xl text-left cursor-pointer transition-all flex flex-col gap-1 ${
                           inputs.platform === p.name
                             ? "border-brand-primary bg-blue-50/50 shadow-sm"
                             : "border-slate-200 hover:border-slate-300"
@@ -475,11 +495,11 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
             
             {/* Top 4 KPI Grid Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card className="flex flex-col p-6">
+              <Card className="flex flex-col p-6 border border-slate-200 hover:shadow-md transition-all duration-300">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Standard Potential (G_std)
+                  Standard Potency (G_std)
                 </span>
-                <span className="text-3xl font-bold text-brand-primary tracking-tight">
+                <span className="text-3xl font-extrabold text-brand-primary tracking-tight">
                   {getVal(
                     activeDiagnosticResult[activeDiagnosticResult.length - 1].G_std,
                     activeDiagnosticResult[activeDiagnosticResult.length - 1].G
@@ -490,7 +510,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
                 </span>
               </Card>
 
-              <Card className="flex flex-col p-6">
+              <Card className="flex flex-col p-6 border border-slate-200 hover:shadow-md transition-all duration-300">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                   Environmental Wind (K_mult)
                 </span>
@@ -510,7 +530,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
                 </span>
               </Card>
 
-              <Card className="flex flex-col p-6">
+              <Card className="flex flex-col p-6 border border-slate-200 hover:shadow-md transition-all duration-300">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                   Active Exposure (G_active)
                 </span>
@@ -522,7 +542,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
                 </span>
               </Card>
 
-              <Card className="flex flex-col p-6">
+              <Card className="flex flex-col p-6 border border-slate-200 hover:shadow-md transition-all duration-300">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                   Diagnostic Phase
                 </span>
@@ -544,7 +564,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
             {/* Main Graphs Dashboard Grid - Pristine SVG Vector Engining */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Chart (Exposure G Curve - 100% Crisp Vector SVG) */}
-              <Card className="lg:col-span-2 p-6 flex flex-col justify-between">
+              <Card className="lg:col-span-2 p-6 flex flex-col justify-between border border-slate-200 hover:shadow-md transition-all duration-300">
                 <div className="flex justify-between items-center mb-4">
                   <div className="card-title">Dual-Track Exposure Wave (G)</div>
                   <div className="flex gap-4">
@@ -630,12 +650,12 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
               </Card>
 
               {/* Right Chart (CSS Grid Wave Polarizer) */}
-              <Card className="p-6 flex flex-col justify-between">
+              <Card className="p-6 flex flex-col justify-between border border-slate-200 hover:shadow-md transition-all duration-300">
                 <div className="card-title mb-4">Polarization Active Grid (C_t)</div>
                 <div className="flex items-center justify-center h-64">
                   {/* CSS Grid Matrix: 100% Vector crispness on Retina screens */}
                   <div 
-                    className="grid gap-[2px] bg-slate-100 border border-slate-100 rounded-xl p-[2px] w-56 h-60"
+                    className="grid gap-[2px] bg-slate-50 border border-slate-100 rounded-xl p-[3px] w-56 h-60 shadow-inner"
                     style={{ gridTemplateColumns: 'repeat(15, minmax(0, 1fr))' }}
                   >
                     {Array.from({ length: 225 }).map((_, idx) => {
@@ -672,7 +692,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
             {/* Bottom Large Metrics Chart & Report Box */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* R_t & C_t Vector SVG lines */}
-              <Card className="lg:col-span-2 p-6 flex flex-col justify-between">
+              <Card className="lg:col-span-2 p-6 flex flex-col justify-between border border-slate-200 hover:shadow-md transition-all duration-300">
                 <div className="flex justify-between items-center mb-4">
                   <div className="card-title">Dynamic Resonance (R_t) & Activation (C_t)</div>
                   <div className="flex gap-4">
@@ -758,11 +778,11 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
 
               {/* High-fidelity diagnostic summary cards */}
               <div className="flex flex-col gap-6">
-                <Card className="p-0 overflow-hidden flex-1 flex flex-col justify-between">
+                <Card className="p-0 overflow-hidden flex-1 flex flex-col justify-between border border-slate-200 hover:shadow-md transition-all duration-300">
                   <div className="bg-slate-50 border-b border-slate-100 p-4">
                     <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest">📊 Standard Summary Report</h4>
                   </div>
-                  <pre className="m-0 rounded-none bg-white text-slate-700 p-4 text-[11px] font-mono border-none overflow-x-auto flex-1 h-36">
+                  <pre className="m-0 rounded-none bg-white text-slate-700 p-4 text-[11px] font-mono border-none overflow-y-auto flex-1 h-36">
                     {generateSummaryText(activeDiagnosticResult)}
                   </pre>
                 </Card>
@@ -772,6 +792,23 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
             {/* Metrology Weather Radar Scan (Diagnosis outcome) */}
             <div className="interpretation-box" id="interpretation-box">
               <em>Generating diagnostic scan ...</em>
+            </div>
+
+            {/* Double-Box Prompt Compilation and Static Summary Section */}
+            <div className="report-section">
+              <div className="report-box">
+                <h4>📊 Standard Summary Report (直接显示简报)</h4>
+                <pre id="summary-report-box" style={{ background: "#ffffff", color: "#0f172a", border: "1px solid var(--border-color)" }}>
+                  // Run simulation to generate summary...
+                </pre>
+              </div>
+              <div className="report-box">
+                <h4>💬 Compiled AI Prompt (大一统 AI 诊断整包)</h4>
+                <textarea id="ai-compiled-prompt" readonly placeholder="Run simulation to compile prompt..."></textarea>
+                <button className="report-btn shadow-md shadow-blue-500/10" id="copy-ai-btn" onClick={copyDiagnosticPrompt}>
+                  📋 Copy Whole Prompt (For Web Chat)
+                </button>
+              </div>
             </div>
           </div>
         )}
