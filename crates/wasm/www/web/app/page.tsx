@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useStore } from "@/store/useStore";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
@@ -27,10 +27,6 @@ export default function Home() {
   const [wasmModule, setWasmModule] = useState<any>(null);
   const [logIndex, setLogIndex] = useState(0);
 
-  const gridCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const chartCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const metricsCanvasRef = useRef<HTMLCanvasElement | null>(null);
-
   // ── Load WASM Dynamically from Next.js Public Directory ──
   useEffect(() => {
     import("../public/pkg/lasinfon_wasm.js")
@@ -40,13 +36,6 @@ export default function Home() {
       })
       .catch((err) => console.error("Failed to load WASM in Next.js", err));
   }, []);
-
-  // ── Render Charts on State Change ──
-  useEffect(() => {
-    if (state === "rendering" && activeDiagnosticResult && wasmModule) {
-      drawAllCharts(activeDiagnosticResult);
-    }
-  }, [state, activeDiagnosticResult, wasmModule]);
 
   const getVal = (val: any, def = 0.0) => (val !== undefined && val !== null ? val : def);
 
@@ -91,125 +80,17 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
 ==========================================`;
   };
 
-  // ── Canvas Drawing Engines ──
-  const drawAllCharts = (records: any[]) => {
-    const lastRecord = records[records.length - 1];
-    drawGrid(lastRecord);
-    drawChart(records);
-    drawMetrics(records);
-  };
-
-  const drawGrid = (record: any) => {
-    const canvas = gridCanvasRef.current;
-    if (!canvas || !record) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const C_t = record.C_t;
-    const cells = 15;
-    const size = canvas.width / cells;
-    for (let x = 0; x < cells; x++) {
-      for (let y = 0; y < cells; y++) {
-        const active = Math.random() < C_t;
-        ctx.fillStyle = active ? `rgba(124, 58, 237, ${0.3 + C_t * 0.7})` : "#f1f5f9";
-        ctx.strokeStyle = "#e2e8f0";
-        ctx.fillRect(x * size, y * size, size, size);
-        ctx.strokeRect(x * size, y * size, size, size);
-      }
+  // ── High-Fidelity SVG Path Generator (Bézier Spline) ──
+  const generateSvgPath = (points: { x: number; y: number }[]): string => {
+    if (points.length < 2) return "";
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const xc = (points[i].x + points[i + 1].x) / 2;
+      const yc = (points[i].y + points[i + 1].y) / 2;
+      d += ` Q ${points[i].x} ${points[i].y}, ${xc} ${yc}`;
     }
-  };
-
-  const drawChart = (records: any[]) => {
-    const canvas = chartCanvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const pad = 30;
-    const w = canvas.width - pad * 2;
-    const h = canvas.height - pad * 2;
-    ctx.strokeStyle = "#cbd5e1";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(pad, pad); ctx.lineTo(pad, canvas.height - pad);
-    ctx.lineTo(canvas.width - pad, canvas.height - pad);
-    ctx.stroke();
-
-    const max_G = Math.max(
-      ...records.map(r => getVal(r.G, 0.0)),
-      ...records.map(r => getVal(r.G_std, getVal(r.G, 0.0))),
-      2.0
-    );
-    const len = records.length;
-
-    // Draw G_std (Standard Reference Potency - Blue Dashed)
-    ctx.strokeStyle = "#3b82f6";
-    ctx.setLineDash([4, 4]);
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    records.forEach((r, idx) => {
-      const x = len > 1 ? pad + (idx / (len - 1)) * w : pad;
-      const y = canvas.height - pad - (getVal(r.G_std, getVal(r.G, 0.0)) / max_G) * h;
-      if (idx === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Draw G_active (Active Environment - Purple Solid)
-    ctx.strokeStyle = "#7c3aed";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    records.forEach((r, idx) => {
-      const x = len > 1 ? pad + (idx / (len - 1)) * w : pad;
-      const y = canvas.height - pad - (getVal(r.G, 0.0) / max_G) * h;
-      if (idx === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-  };
-
-  const drawMetrics = (records: any[]) => {
-    const canvas = metricsCanvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const pad = 35;
-    const w = canvas.width - pad * 2;
-    const h = canvas.height - pad * 2;
-    ctx.strokeStyle = "#cbd5e1";
-    ctx.beginPath();
-    ctx.moveTo(pad, pad); ctx.lineTo(pad, canvas.height - pad);
-    ctx.lineTo(canvas.width - pad, canvas.height - pad);
-    ctx.stroke();
-
-    const max_R = 10;
-    const max_C = 1.0;
-    const len = records.length;
-
-    // R_t (Resonance Heat - Pink)
-    ctx.strokeStyle = "#db2777";
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    records.forEach((r, idx) => {
-      const x = len > 1 ? pad + (idx / (len - 1)) * w : pad;
-      const y = canvas.height - pad - (getVal(r.R_t, 0.0) / max_R) * h;
-      if (idx === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-
-    // C_t (Active Nodes - Purple)
-    ctx.strokeStyle = "#7c3aed";
-    ctx.beginPath();
-    records.forEach((r, idx) => {
-      const x = len > 1 ? pad + (idx / (len - 1)) * w : pad;
-      const y = canvas.height - pad - (getVal(r.C_t, 0.0) / max_C) * h;
-      if (idx === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
+    d += ` L ${points[points.length - 1].x} ${points[points.length - 1].y}`;
+    return d;
   };
 
   // ── Trigger Diagnostic Event (Elevator Mirror Lifecycle) ──
@@ -271,7 +152,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
           K_soil: { base: 0.3, slope: 1.2, w_density: 0.6, w_connect: 0.4 },
           K_comp: { base: 1.0, slope: 0.7 },
           omega: { scale: 2.5, denom: 1000 }
-        }
+                }
       };
 
       const result_string = wasmModule.simulate(
@@ -302,6 +183,61 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
       alert("Simulation Error: " + err.message);
     }
   };
+
+  // ── SVG Coordinate Mapping Computations ──
+  const pad = 35;
+  const chartW = 580;
+  const chartH = 200;
+
+  const max_G = activeDiagnosticResult
+    ? Math.max(...activeDiagnosticResult.map((r: any) => getVal(r.G)), ...activeDiagnosticResult.map((r: any) => getVal(r.G_std, getVal(r.G))), 2.0)
+    : 2.0;
+
+  const len = activeDiagnosticResult ? activeDiagnosticResult.length : 0;
+
+  const points_std = activeDiagnosticResult
+    ? activeDiagnosticResult.map((r: any, idx: number) => ({
+        x: len > 1 ? pad + (idx / (len - 1)) * chartW : pad,
+        y: pad + chartH - (getVal(r.G_std, getVal(r.G)) / max_G) * chartH,
+      }))
+    : [];
+
+  const points_active = activeDiagnosticResult
+    ? activeDiagnosticResult.map((r: any, idx: number) => ({
+        x: len > 1 ? pad + (idx / (len - 1)) * chartW : pad,
+        y: pad + chartH - (getVal(r.G) / max_G) * chartH,
+      }))
+    : [];
+
+  const stdPathD = generateSvgPath(points_std);
+  const activePathD = generateSvgPath(points_active);
+
+  const stdAreaD = points_std.length > 0 ? `${stdPathD} L ${points_std[points_std.length - 1].x} ${pad + chartH} L ${points_std[0].x} ${pad + chartH} Z` : "";
+  const activeAreaD = points_active.length > 0 ? `${activePathD} L ${points_active[points_active.length - 1].x} ${pad + chartH} L ${points_active[0].x} ${pad + chartH} Z` : "";
+
+  // ── Metrics Chart (R_t & C_t) SVG Mapping ──
+  const max_R = 10.0;
+  const max_C = 1.0;
+
+  const points_R = activeDiagnosticResult
+    ? activeDiagnosticResult.map((r: any, idx: number) => ({
+        x: len > 1 ? pad + (idx / (len - 1)) * chartW : pad,
+        y: pad + chartH - (getVal(r.R_t) / max_R) * chartH,
+      }))
+    : [];
+
+  const points_C = activeDiagnosticResult
+    ? activeDiagnosticResult.map((r: any, idx: number) => ({
+        x: len > 1 ? pad + (idx / (len - 1)) * chartW : pad,
+        y: pad + chartH - (getVal(r.C_t) / max_C) * chartH,
+      }))
+    : [];
+
+  const pathR_D = generateSvgPath(points_R);
+  const pathC_D = generateSvgPath(points_C);
+
+  const areaR_D = points_R.length > 0 ? `${pathR_D} L ${points_R[points_R.length - 1].x} ${pad + chartH} L ${points_R[0].x} ${pad + chartH} Z` : "";
+  const areaC_D = points_C.length > 0 ? `${pathC_D} L ${points_C[points_C.length - 1].x} ${pad + chartH} L ${points_C[0].x} ${pad + chartH} Z` : "";
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -531,11 +467,11 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
             
             {/* Top 4 KPI Grid Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card className="flex flex-col">
+              <Card className="flex flex-col p-6">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                   Standard Potency (G_std)
                 </span>
-                <span className="text-3xl font-bold text-brand-blue tracking-tight">
+                <span className="text-3xl font-bold text-brand-primary tracking-tight">
                   {getVal(
                     activeDiagnosticResult[activeDiagnosticResult.length - 1].G_std,
                     activeDiagnosticResult[activeDiagnosticResult.length - 1].G
@@ -546,7 +482,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
                 </span>
               </Card>
 
-              <Card className="flex flex-col">
+              <Card className="flex flex-col p-6">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                   Environmental Wind (K_mult)
                 </span>
@@ -566,7 +502,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
                 </span>
               </Card>
 
-              <Card className="flex flex-col">
+              <Card className="flex flex-col p-6">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                   Active Exposure (G_active)
                 </span>
@@ -578,7 +514,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
                 </span>
               </Card>
 
-              <Card className="flex flex-col">
+              <Card className="flex flex-col p-6">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                   Diagnostic Phase
                 </span>
@@ -597,33 +533,138 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
               </Card>
             </div>
 
-            {/* Main Graphs Dashboard Grid */}
+            {/* Main Graphs Dashboard Grid - Pristine SVG Vector Engining */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Chart (Exposure G Curve) */}
-              <Card className="lg:col-span-2">
+              {/* Left Chart (Exposure G Curve - 100% Crisp Vector SVG) */}
+              <Card className="lg:col-span-2 p-6 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-4">
                   <div className="card-title">Dual-Track Exposure Wave (G)</div>
                   <div className="flex gap-4">
-                    <div className="legend-item"><div className="legend-color bg-brand-blue" /> G_std (Standard)</div>
+                    <div className="legend-item"><div className="legend-color bg-brand-primary" /> G_std (Standard)</div>
                     <div className="legend-item"><div className="legend-color bg-brand-purple" /> G_active (Active)</div>
                   </div>
                 </div>
-                <canvas ref={chartCanvasRef} width="650" height="240" className="w-full h-64" />
+                
+                {/* ── Pristine Responsive SVG Vector Engine ── */}
+                <div className="w-full h-64 relative">
+                  <svg viewBox={`0 0 ${chartW + pad * 2} ${chartH + pad * 2}`} className="w-full h-full">
+                    <defs>
+                      <linearGradient id="purpleGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.22" />
+                        <stop offset="100%" stopColor="#7c3aed" stopOpacity="0.0" />
+                      </linearGradient>
+                      <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#2563eb" stopOpacity="0.08" />
+                        <stop offset="100%" stopColor="#2563eb" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Standard Horizontal Axis Gridlines */}
+                    {[1, 2, 3, 4].map((i) => (
+                      <line
+                        key={i}
+                        x1={pad}
+                        y1={pad + (chartH / 4) * i}
+                        x2={pad + chartW}
+                        y2={pad + (chartH / 4) * i}
+                        stroke="#f1f5f9"
+                        strokeWidth="1"
+                      />
+                    ))}
+
+                    {/* standard reference (SRP) Vector Gradient & Line */}
+                    {stdAreaD && <path d={stdAreaD} fill="url(#blueGrad)" />}
+                    {stdPathD && (
+                      <path
+                        d={stdPathD}
+                        fill="none"
+                        stroke="#2563eb"
+                        strokeWidth="2"
+                        strokeDasharray="4,4"
+                      />
+                    )}
+
+                    {/* Active Environment Vector Gradient & Line */}
+                    {activeAreaD && <path d={activeAreaD} fill="url(#purpleGrad)" />}
+                    {activePathD && (
+                      <path
+                        d={activePathD}
+                        fill="none"
+                        stroke="#7c3aed"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                      />
+                    )}
+
+                    {/* Current Anchor Markers */}
+                    {points_std.length > 0 && (
+                      <circle
+                        cx={points_std[points_std.length - 1].x}
+                        cy={points_std[points_std.length - 1].y}
+                        r="4.5"
+                        fill="#ffffff"
+                        stroke="#2563eb"
+                        strokeWidth="2.5"
+                      />
+                    )}
+                    {points_active.length > 0 && (
+                      <circle
+                        cx={points_active[points_active.length - 1].x}
+                        cy={points_active[points_active.length - 1].y}
+                        r="5"
+                        fill="#ffffff"
+                        stroke="#7c3aed"
+                        strokeWidth="3"
+                      />
+                    )}
+                  </svg>
+                </div>
               </Card>
 
-              {/* Right Chart (Polarization Grid) */}
-              <Card>
+              {/* Right Chart (CSS Grid Wave Polarizer) */}
+              <Card className="p-6 flex flex-col justify-between">
                 <div className="card-title mb-4">Polarization Active Grid (C_t)</div>
                 <div className="flex items-center justify-center h-64">
-                  <canvas ref={gridCanvasRef} width="240" height="240" className="w-60 h-60" />
+                  {/* CSS Grid Matrix: 100% Vector crispness on Retina screens */}
+                  <div 
+                    className="grid gap-[2px] bg-slate-100 border border-slate-100 rounded-xl p-[2px] w-56 h-60"
+                    style={{ gridTemplateColumns: 'repeat(15, minmax(0, 1fr))' }}
+                  >
+                    {Array.from({ length: 225 }).map((_, idx) => {
+                      const x = idx % 15;
+                      const y = Math.floor(idx / 15);
+                      const centerX = 15 / 2;
+                      const centerY = 15 / 2;
+                      
+                      const lastRecord = activeDiagnosticResult[activeDiagnosticResult.length - 1];
+                      const C_t = getVal(lastRecord.C_t, 0.0);
+                      const t_wave = lastRecord.t;
+                      
+                      const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+                      const wave = Math.sin(dist * 0.8 - t_wave * 0.5);
+                      const isActive = wave > (1.0 - C_t * 1.5) && (Math.sin(idx * 7.5) > (1.2 - C_t * 2.0));
+                      
+                      return (
+                        <div 
+                          key={idx} 
+                          className="rounded-[2px] transition-all duration-300"
+                          style={{
+                            backgroundColor: isActive 
+                              ? `rgba(124, 58, 237, ${0.4 + C_t * 0.6})` 
+                              : "rgba(255, 255, 255, 0.95)"
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
               </Card>
             </div>
 
             {/* Bottom Large Metrics Chart & Report Box */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* R_t & C_t line chart */}
-              <Card className="lg:col-span-2">
+              {/* R_t & C_t Vector SVG lines */}
+              <Card className="lg:col-span-2 p-6 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-4">
                   <div className="card-title">Dynamic Resonance (R_t) & Activation (C_t)</div>
                   <div className="flex gap-4">
@@ -631,7 +672,80 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
                     <div className="legend-item"><div className="legend-color bg-brand-purple" /> C_t (Active Ratio)</div>
                   </div>
                 </div>
-                <canvas ref={metricsCanvasRef} width="650" height="180" className="w-full h-44" />
+
+                <div className="w-full h-44 relative">
+                  <svg viewBox={`0 0 ${chartW + pad * 2} ${chartH + pad * 2}`} className="w-full h-full">
+                    <defs>
+                      <linearGradient id="pinkGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#db2777" stopOpacity="0.12" />
+                        <stop offset="100%" stopColor="#db2777" stopOpacity="0.0" />
+                      </linearGradient>
+                      <linearGradient id="purpleGrad2" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.12" />
+                        <stop offset="100%" stopColor="#7c3aed" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Standard Axis Gridlines */}
+                    {[1, 2, 3].map((i) => (
+                      <line
+                        key={i}
+                        x1={pad}
+                        y1={pad + (chartH / 3) * i}
+                        x2={pad + chartW}
+                        y2={pad + (chartH / 3) * i}
+                        stroke="#f1f5f9"
+                        strokeWidth="1"
+                      />
+                    ))}
+
+                    {/* R_t vector lines & area gradient */}
+                    {areaR_D && <path d={areaR_D} fill="url(#pinkGrad)" />}
+                    {pathR_D && (
+                      <path
+                        d={pathR_D}
+                        fill="none"
+                        stroke="#db2777"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                      />
+                    )}
+
+                    {/* C_t vector lines & area gradient */}
+                    {areaC_D && <path d={areaC_D} fill="url(#purpleGrad2)" />}
+                    {pathC_D && (
+                      <path
+                        d={pathC_D}
+                        fill="none"
+                        stroke="#7c3aed"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                      />
+                    )}
+
+                    {/* Markers */}
+                    {points_R.length > 0 && (
+                      <circle
+                        cx={points_R[points_R.length - 1].x}
+                        cy={points_R[points_R.length - 1].y}
+                        r="4"
+                        fill="#ffffff"
+                        stroke="#db2777"
+                        strokeWidth="2"
+                      />
+                    )}
+                    {points_C.length > 0 && (
+                      <circle
+                        cx={points_C[points_C.length - 1].x}
+                        cy={points_C[points_C.length - 1].y}
+                        r="4"
+                        fill="#ffffff"
+                        stroke="#7c3aed"
+                        strokeWidth="2"
+                      />
+                    )}
+                  </svg>
+                </div>
               </Card>
 
               {/* High-fidelity diagnostic summary cards */}
