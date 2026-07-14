@@ -1,0 +1,15 @@
+{
+  "name": "lasinfon-wasm",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "lasinfon_wasm_bg.wasm",
+    "lasinfon_wasm.js",
+    "lasinfon_wasm.d.ts"
+  ],
+  "main": "lasinfon_wasm.js",
+  "types": "lasinfon_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

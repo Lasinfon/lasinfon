@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DiagnoseInputContract",
+  "type": "object",
+  "properties": {
+    "platform": {
+      "type": "string",
+      "description": "Target publishing platform",
+      "minLength": 1
+    },
+    "purpose": {
+      "type": "string",
+      "description": "Strategic propagation purpose",
+      "minLength": 1
+    },
+    "content": {
+      "type": "string",
+      "description": "Original raw copytext to analyze",
+      "minLength": 5
+    }
+  },
+  "required": ["platform", "purpose", "content"]
+}

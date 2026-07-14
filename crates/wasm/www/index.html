@@ -2,45 +2,265 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Lasinfon (v5.1.2) - Public Opinion Weather Radar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lasinfon (v6.1.1) - Public Opinion Weather Radar</title>
+    
+    <!-- ── 🚨 Absolute Native Alert Telemetry Sensor (Guaranteed to Run and Pop up) ── -->
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            var msg = "🚨 [JS Compile/Runtime Error]\n\n" + 
+                      "Message: " + message + "\n" +
+                      "Line: " + lineno + ", Col: " + colno + "\n" +
+                      "Source: " + source + "\n\n" +
+                      "Stack:\n" + (error ? error.stack : 'N/A');
+            alert(msg);
+            return false;
+        };
+
+        window.addEventListener('unhandledrejection', function(event) {
+            var msg = "🚨 [Unhandled Promise Rejection]\n\n" + 
+                      "Reason: " + event.reason + "\n\n" +
+                      "Common Causes:\n" +
+                      "1. Modern browsers block WASM via file:// due to CORS. You must run a local server.\n" +
+                      "2. Python server might be sending incorrect MIME type for .wasm. Please use server.py.\n" +
+                      "3. Cache issue. Press Cmd+Shift+R to force reload.";
+            alert(msg);
+        });
+    </script>
+
     <style>
-        body { background: #0f141c; color: #e2e8f0; font-family: monospace; padding: 20px; }
-        .container { display: flex; gap: 20px; max-width: 1200px; margin: 0 auto; }
-        .control-panel { width: 350px; background: #1a202c; padding: 15px; border-radius: 8px; }
-        .display-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; }
-        .canvas-container { display: flex; gap: 20px; flex-wrap: wrap; }
-        canvas { background: #0b0f17; border: 1px solid #2d3748; border-radius: 4px; }
-        .btn { background: #4a5568; border: none; color: white; padding: 10px; width: 100%; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        .btn:hover { background: #718096; }
-        label { display: block; margin-top: 10px; font-size: 12px; color: #a0aec0; }
-        select, input, textarea { width: 100%; background: #2d3748; border: 1px solid #4a5568; color: white; padding: 5px; box-sizing: border-box; font-family: monospace; }
-        textarea { height: 120px; resize: vertical; font-size: 11px; }
-        pre { background: #0b0f17; padding: 10px; border-radius: 4px; font-size: 11px; overflow-x: auto; max-height: 200px; }
-        .interpretation-box { background: #1a202c; padding: 15px; border-radius: 8px; font-size: 13px; line-height: 1.6; border-left: 4px solid #4299e1; }
-        .interpretation-box h4 { margin: 0 0 8px 0; color: #63b3ed; }
-        .copy-btn { background: #2d3748; border: 1px solid #4a5568; color: #a0aec0; padding: 5px 10px; cursor: pointer; font-size: 11px; border-radius: 4px; margin-top: 10px; }
-        .copy-btn:hover { background: #4a5568; color: white; }
+        /* Modern Light-Themed SaaS Styles (Dribbble Inspired) */
+        :root {
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent-purple: #7c3aed;
+            --accent-pink: #db2777;
+            --accent-blue: #3b82f6;
+            --danger: #ef4444;
+        }
+
+        body { 
+            background: var(--bg-main); 
+            color: var(--text-main); 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
+            padding: 30px;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        h2 {
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0 0 25px 0;
+            font-size: 24px;
+            letter-spacing: -0.025em;
+        }
+
+        .container { 
+            display: flex; 
+            gap: 25px; 
+            max-width: 1300px; 
+            margin: 0 auto; 
+        }
+
+        .control-panel { 
+            width: 360px; 
+            background: var(--bg-card); 
+            padding: 24px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            box-sizing: border-box;
+            height: fit-content;
+        }
+
+        .display-panel { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 25px; 
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .canvas-container { 
+            display: flex; 
+            gap: 25px; 
+            flex-wrap: wrap; 
+        }
+
+        canvas { 
+            background: #ffffff; 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+        }
+
+        .btn { 
+            background: var(--primary); 
+            border: none; 
+            color: white; 
+            padding: 12px; 
+            width: 100%; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            font-size: 14px;
+            transition: background 0.15s ease;
+        }
+        .btn:hover { background: var(--primary-hover); }
+        
+        .btn-sm { 
+            background: #f1f5f9; 
+            border: 1px solid var(--border-color); 
+            color: var(--text-muted); 
+            padding: 8px 12px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            border-radius: 6px; 
+            font-weight: 500;
+        }
+        .btn-sm:hover:not(:disabled) { 
+            background: #e2e8f0; 
+            color: var(--text-main); 
+        }
+        .btn-sm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        label { 
+            display: block; 
+            margin-top: 12px; 
+            font-size: 12px; 
+            font-weight: 600;
+            color: var(--text-muted); 
+            margin-bottom: 4px;
+        }
+
+        select, input, textarea { 
+            width: 100%; 
+            background: #ffffff; 
+            border: 1px solid var(--border-color); 
+            color: var(--text-main); 
+            padding: 8px 12px; 
+            border-radius: 6px;
+            box-sizing: border-box; 
+            font-family: inherit; 
+            font-size: 13px;
+        }
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        textarea { height: 120px; resize: vertical; font-size: 12px; }
+        
+        pre { 
+            background: #1e293b; 
+            color: #f8fafc;
+            padding: 15px; 
+            border-radius: 8px; 
+            font-size: 11px; 
+            font-family: monospace;
+            overflow-x: auto; 
+            max-height: 200px; 
+            margin: 0;
+        }
+
+        .interpretation-box { 
+            background: var(--bg-card); 
+            padding: 20px; 
+            border-radius: 12px; 
+            font-size: 14px; 
+            line-height: 1.6; 
+            border-left: 4px solid var(--primary); 
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            border-top: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .interpretation-box h4 { margin: 0 0 8px 0; color: var(--primary); font-size: 16px; font-weight: 700; }
+        
+        /* Two-Box Display Section */
+        .report-section { display: flex; gap: 25px; margin-top: 5px; }
+        .report-box { 
+            flex: 1; 
+            background: var(--bg-card); 
+            padding: 20px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        }
+        .report-box h4 { margin: 0 0 10px 0; color: var(--text-main); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .report-box pre, .report-box textarea { 
+            width: 100%; 
+            height: 220px; 
+            background: #f8fafc; 
+            border: 1px solid var(--border-color); 
+            border-radius: 6px; 
+            color: var(--text-main); 
+            font-family: monospace; 
+            font-size: 11px; 
+            padding: 12px; 
+            box-sizing: border-box; 
+        }
+        .report-box textarea { resize: none; }
+        .report-btn { 
+            background: var(--primary); 
+            border: none; 
+            color: white; 
+            padding: 10px 14px; 
+            cursor: pointer; 
+            font-size: 13px; 
+            font-weight: 600; 
+            border-radius: 6px; 
+            margin-top: 10px; 
+            width: 100%; 
+            transition: background 0.15s ease;
+        }
+        .report-btn:hover { background: var(--primary-hover); }
+
         .legend { display: flex; gap: 15px; margin-bottom: 5px; }
-        .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; }
-        .legend-color { width: 12px; height: 12px; border-radius: 2px; }
-        .diagnostic-card { background: #141a24; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 12px; border: 1px solid #2d3748; }
-        .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
-        .badge-red { background: #9b2c2c; color: #feb2b2; }
-        .badge-yellow { background: #975a16; color: #fef08a; }
-        .badge-green { background: #22543d; color: #c6f6d5; }
-        .btn-sm { background: #2d3748; border: 1px solid #4a5568; color: #a0aec0; padding: 5px 10px; cursor: pointer; font-size: 11px; border-radius: 4px; }
-        .btn-sm:hover { background: #4a5568; color: white; }
-        .collapsible { background: #1a202c; border: 1px solid #2d3748; border-radius: 4px; padding: 10px; margin-top: 10px; }
-        .collapsible summary { cursor: pointer; color: #a0aec0; font-size: 12px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; color: var(--text-muted); }
+        .legend-color { width: 10px; height: 10px; border-radius: 50%; }
+        
+        .diagnostic-card { background: var(--bg-main); padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 13px; border: 1px solid var(--border-color); }
+        .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+        .badge-yellow { background: #fef9c3; color: #854d0e; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        
+        .collapsible { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-top: 12px; }
+        .collapsible summary { cursor: pointer; color: var(--text-muted); font-size: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
 
-<h2>LASINFON - Autonomous Self-Growing Propagation Dashboard (v5.1.2)</h2>
+<h2>LASINFON - Autonomous Self-Growing Propagation Dashboard (v6.1.1)</h2>
 
 <div class="container">
     <div class="control-panel">
-        <label>Scenario:</label>
+        <label>Scenario Preset:</label>
         <select id="preset-selector">
             <option value="video">A. Gen Z + Short-video Platform</option>
             <option value="professional">B. Professional Network + Knowledge Parents</option>
@@ -51,7 +271,7 @@
             <summary>📋 Custom Input (config + scenario)</summary>
             <label>Paste complete JSON (config + scenario):</label>
             <textarea id="custom-json" placeholder='{"config": {...}, "scenario": {...}}'></textarea>
-            <div style="font-size:10px; color:#a0aec0; margin-top:4px;">
+            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">
                 Must contain <code>"config"</code> and <code>"scenario"</code> objects.
             </div>
         </details>
@@ -61,9 +281,17 @@
             <label>Paste simulation output (array of records):</label>
             <textarea id="visualize-json" placeholder='[{"t":0, "G":..., ...}, ...]'></textarea>
             <button class="btn" id="visualize-btn" style="margin-top:5px;">Render Charts from Pasted Data</button>
-            <div style="font-size:10px; color:#a0aec0; margin-top:4px;">
+            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">
                 Accepts a JSON array of records, or an object with a <code>"records"</code> key.
             </div>
+        </details>
+
+        <!-- ── Paste Web Chat AI Diagnosis Panel (v6.1.1) ── -->
+        <details class="collapsible" id="ai-response-panel">
+            <summary>📥 Paste Web Chat AI Diagnosis (回贴 AI 诊断)</summary>
+            <label>Paste the Markdown diagnostic report from ChatGPT/Claude here:</label>
+            <textarea id="ai-response-text" style="height:120px;" placeholder="Paste the Markdown output from your AI Web Chat here..."></textarea>
+            <button class="btn" id="render-ai-btn" style="margin-top:5px; background:var(--accent-purple);">Render AI Report in Scan Box</button>
         </details>
 
         <label>Max ticks (for new simulation):</label>
@@ -81,44 +309,81 @@
 
     <div class="display-panel">
         <div class="canvas-container">
-            <div>
-                <div style="font-size:12px; margin-bottom:5px;">Atomic Polarization Grid (C_t)</div>
+            <div class="card">
+                <div class="card-title">Atomic Polarization Grid (C_t)</div>
                 <canvas id="grid-canvas" width="240" height="240"></canvas>
             </div>
-            <div style="flex:1; min-width:300px;">
-                <div style="font-size:12px; margin-bottom:5px;">Coherent Exposure (G)</div>
-                <canvas id="chart-canvas" width="450" height="240"></canvas>
+            <div class="card" style="flex:1; min-width:300px;">
+                <div class="card-title">Dual-Track Exposure (G)</div>
+                <div class="legend" style="margin-bottom: 8px;">
+                    <div class="legend-item"><div class="legend-color" style="background:var(--accent-blue);"></div> G_std (Standard Potential /SRP)</div>
+                    <div class="legend-item"><div class="legend-color" style="background:var(--accent-purple);"></div> G_active (Active Environment)</div>
+                </div>
+                <canvas id="chart-canvas" width="450" height="215"></canvas>
             </div>
         </div>
 
-        <div>
+        <div class="card">
             <div class="legend">
-                <div class="legend-item"><div class="legend-color" style="background:#f472b6;"></div> R_t (Resonance / Like Likelihood)</div>
-                <div class="legend-item"><div class="legend-color" style="background:#a78bfa;"></div> C_t (Active Nodes / Forward Activity)</div>
+                <div class="legend-item"><div class="legend-color" style="background:var(--accent-pink);"></div> R_t (Resonance Heat / Dynamic Potential)</div>
+                <div class="legend-item"><div class="legend-color" style="background:var(--accent-purple);"></div> C_t (Active Resonance Nodes)</div>
             </div>
             <canvas id="metrics-canvas" width="710" height="180"></canvas>
         </div>
 
         <div>
-            <div style="font-size:12px; margin-bottom:5px;">Health Scan</div>
+            <div style="font-size:12px; margin-bottom:5px; font-weight:600; color:var(--text-muted);">Metrology Weather Radar Scan</div>
             <div class="interpretation-box" id="interpretation-box">
                 <em>Run a simulation or paste results to see the diagnosis.</em>
             </div>
-            <button class="copy-btn" id="copy-prompt-btn" onclick="copyForAI()">Copy Prompt + Result for Deep AI Analysis</button>
         </div>
 
-        <div>
-            <div style="font-size:12px; margin-bottom:5px;">WASM Raw Output / Pasted Data</div>
+        <!-- ── Double-Box Layout Section (v6.1.1) ── -->
+        <div class="report-section">
+            <div class="report-box">
+                <h4>📊 Standard Summary Report (直接显示简报)</h4>
+                <pre id="summary-report-box" style="background: #ffffff; color: #0f172a; border: 1px solid var(--border-color);">// Run simulation to generate summary...</pre>
+            </div>
+            <div class="report-box">
+                <h4>💬 Compiled AI Prompt (大一统 AI 诊断整包)</h4>
+                <textarea id="ai-compiled-prompt" readonly placeholder="Run simulation to compile prompt..."></textarea>
+                <button class="report-btn" id="copy-ai-btn" onclick="selectAndCopyPrompt()">📋 Copy Whole Prompt (For Web Chat)</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">WASM Raw Output / Pasted Data</div>
             <pre id="json-output">// Results will appear here...</pre>
         </div>
     </div>
 </div>
 
 <script type="module">
+    // ── Import WASM Module (Placed at absolute top scope of module) ──
     import init, { simulate } from './pkg/lasinfon_wasm.js';
 
     let lastRecords = [];
     let animInterval = null;
+
+    // Hardcoded System Prompt Instructions for Web Chat Direct Interpretation
+    const SYSTEM_INTERPRETER_PROMPT = `You are an expert in social laser dynamics, public opinion prediction, and metrological calibration. Your task is to interpret the provided summarized Lasinfon Simulation Report and explain it in plain, actionable, and mathematically rigorous human language.
+
+Output Structure:
+1. One-Sentence Core Verdict - Standard potential (G_std), environmental multiplier (K_mult), active exposure (G_active).
+2. Standard vs. Active Divergence Analysis - Why did it succeed/fail? Is it because of the copy's intrinsic strength, or did it ride a massive trend? Or did a masterpiece get choked? Cite explicit differences from the summary.
+3. Driver & Bottleneck Attribution - Trace every major driver or bottleneck back to a specific input parameter (e.g. practical_value, emotion_arousal, L_antipathy).
+4. Actionable Optimization Suggestions - 1-2 concrete actions mapped to controllable parameters, ranked by ROI.
+5. Limitations & Honesty - Mention relative trends, and that random fluctuations affect results.
+
+Metrological Interpretation Rules:
+- If G_std is high (>50) but G_active is low (<10) because K_mult is low (<0.3x) -> Phenomenal Masterpiece Choked. Action: Do NOT rewrite, change channels.
+- If G_std is low (<2.0) but G_active is high (>50) because K_mult is high (>50x) -> Algo Rider. Succeeded due to trend/ad push; warn on sudden organic drops.
+- If both are high -> Coherent Resonance.
+- If gain saturation observed -> Excited population depleted naturally.
+
+Please analyze the following summarized simulation report:
+
+`;
 
     // Full presets (no omissions)
     const presets = {
@@ -188,16 +453,9 @@
         }
     };
 
-    // Seeded PRNG for deterministic grids
-    function seededRandom(seedStr) {
-        let h = 1540483477;
-        for (let i = 0; i < seedStr.length; i++) {
-            h = Math.imul(h ^ seedStr.charCodeAt(i), 1234567);
-        }
-        return function() {
-            h = Math.imul(h ^ (h >>> 15), 1234567);
-            return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
-        };
+    // Safe field retriever to protect against undefined fields from old browser cache
+    function getVal(val, def = 0.0) {
+        return (val !== undefined && val !== null) ? val : def;
     }
 
     async function start() {
@@ -207,6 +465,7 @@
         const presetSelect = document.getElementById("preset-selector");
         const customPanel = document.getElementById("custom-panel");
         const visualizeBtn = document.getElementById("visualize-btn");
+        const renderAiBtn = document.getElementById("render-ai-btn");
 
         presetSelect.addEventListener("change", () => {
             customPanel.style.display = presetSelect.value === "custom" ? "block" : "none";
@@ -298,6 +557,13 @@
                 alert("Invalid JSON: " + e.message);
             }
         });
+
+        // Pasted Web Chat AI Diagnosis Renderer
+        renderAiBtn.addEventListener("click", () => {
+            const rawText = document.getElementById("ai-response-text").value.trim();
+            if (!rawText) { alert("Paste the AI diagnosis Markdown first!"); return; }
+            renderAIResponse(rawText);
+        });
     }
 
     function drawAll(records, maxTicks, seedStr) {
@@ -305,6 +571,7 @@
         drawGrid(lastRecord, seedStr + "_grid");
         drawChart(records, maxTicks);
         drawMetrics(records, maxTicks);
+        compileAIBoxes(records);
     }
 
     function drawGrid(record, seedStr) {
@@ -319,8 +586,8 @@
         for (let x = 0; x < cells; x++) {
             for (let y = 0; y < cells; y++) {
                 const active = rand() < C_t;
-                ctx.fillStyle = active ? `rgba(167, 139, 250, ${0.3 + C_t * 0.7})` : "#141a24";
-                ctx.strokeStyle = "#1d2736";
+                ctx.fillStyle = active ? `rgba(167, 139, 250, ${0.3 + C_t * 0.7})` : "#f1f5f9";
+                ctx.strokeStyle = "#e2e8f0";
                 ctx.fillRect(x * size, y * size, size, size);
                 ctx.strokeRect(x * size, y * size, size, size);
             }
@@ -334,20 +601,48 @@
         const pad = 30;
         const w = canvas.width - pad * 2;
         const h = canvas.height - pad * 2;
-        ctx.strokeStyle = "#4a5568";
+        ctx.strokeStyle = "#cbd5e1";
         ctx.beginPath();
         ctx.moveTo(pad, pad); ctx.lineTo(pad, canvas.height - pad);
         ctx.lineTo(canvas.width - pad, canvas.height - pad);
         ctx.stroke();
         if (!records.length) return;
-        const max_G = Math.max(...records.map(r => r.G || 0), 2.0);
-        ctx.strokeStyle = "#a78bfa";
+
+        // Find max exposure across both G_active (G) and G_std with fallback
+        const max_G = Math.max(
+            ...records.map(r => getVal(r.G, 0.0)),
+            ...records.map(r => getVal(r.G_std, getVal(r.G, 0.0))),
+            2.0
+        );
+        const effectiveMaxTicks = maxTicks || records.length;
+
+        // Safeguard Division-by-Zero (Ruler boundary protection when effectiveMaxTicks <= 1)
+        const computeX = (idx) => {
+            return effectiveMaxTicks > 1 ? pad + (idx / (effectiveMaxTicks - 1)) * w : pad;
+        };
+
+        // Draw G_std (Standard Reference Potency - Blue Dashed Line) with fallback to G
+        ctx.strokeStyle = "#3b82f6";
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        records.forEach((r, idx) => {
+            const x = computeX(idx);
+            const g_std_val = getVal(r.G_std, getVal(r.G, 0.0));
+            const y = canvas.height - pad - (g_std_val / max_G) * h;
+            if (idx === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        ctx.setLineDash([]); // Reset line dash
+
+        // Draw G_active (Active Environment - Purple Solid Line)
+        ctx.strokeStyle = "#7c3aed";
         ctx.lineWidth = 3;
         ctx.beginPath();
-        const effectiveMaxTicks = maxTicks || records.length;
         records.forEach((r, idx) => {
-            const x = pad + (idx / (effectiveMaxTicks - 1)) * w;
-            const y = canvas.height - pad - ((r.G || 0) / max_G) * h;
+            const x = computeX(idx);
+            const y = canvas.height - pad - (getVal(r.G, 0.0) / max_G) * h;
             if (idx === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         });
@@ -361,7 +656,7 @@
         const pad = 35;
         const w = canvas.width - pad * 2;
         const h = canvas.height - pad * 2;
-        ctx.strokeStyle = "#4a5568";
+        ctx.strokeStyle = "#cbd5e1";
         ctx.beginPath();
         ctx.moveTo(pad, pad); ctx.lineTo(pad, canvas.height - pad);
         ctx.lineTo(canvas.width - pad, canvas.height - pad);
@@ -370,32 +665,43 @@
         const max_R = 10;
         const max_C = 1.0;
         const effectiveMaxTicks = maxTicks || records.length;
-        ctx.strokeStyle = "#f472b6";
+
+        // Safeguard Division-by-Zero
+        const computeX = (idx) => {
+            return effectiveMaxTicks > 1 ? pad + (idx / (effectiveMaxTicks - 1)) * w : pad;
+        };
+
+        // Draw R_t (Resonance Heat - Pink Line)
+        ctx.strokeStyle = "#db2777";
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         records.forEach((r, idx) => {
-            const x = pad + (idx / (effectiveMaxTicks - 1)) * w;
-            const y = canvas.height - pad - (r.R_t / max_R) * h;
+            const x = computeX(idx);
+            const y = canvas.height - pad - (getVal(r.R_t, 0.0) / max_R) * h;
             if (idx === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         });
         ctx.stroke();
-        ctx.strokeStyle = "#a78bfa";
+
+        // Draw C_t (Active Nodes - Purple Line)
+        ctx.strokeStyle = "#7c3aed";
         ctx.beginPath();
         records.forEach((r, idx) => {
-            const x = pad + (idx / (effectiveMaxTicks - 1)) * w;
-            const y = canvas.height - pad - (r.C_t / max_C) * h;
+            const x = computeX(idx);
+            const y = canvas.height - pad - (getVal(r.C_t, 0.0) / max_C) * h;
             if (idx === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         });
         ctx.stroke();
-        ctx.fillStyle = "#a78bfa";
+
+        // Labels
+        ctx.fillStyle = "#7c3aed";
         ctx.font = "9px monospace";
         for (let v = 0; v <= 1.0; v += 0.2) {
             const y = canvas.height - pad - (v / max_C) * h;
             ctx.fillText(`${(v*100).toFixed(0)}%`, canvas.width - pad + 5, y + 3);
         }
-        ctx.fillStyle = "#f472b6";
+        ctx.fillStyle = "#db2777";
         for (let v = 0; v <= 10; v += 2) {
             const y = canvas.height - pad - (v / max_R) * h;
             ctx.fillText(v.toString(), pad - 18, y + 3);
@@ -403,39 +709,143 @@
     }
 
     function showDiagnostic(records) {
-        const first = records[0];
         const last = records[records.length - 1];
-        const peak_G = Math.max(...records.map(r => r.G || 0));
-        const G = last.G || 0;
-        const Lambda = last.lambda_eff || 0;
+        const G_std = getVal(last.G_std, getVal(last.G, 0.0));
+        const G_active = getVal(last.G, 0.0);
+        const K_mult = getVal(last.K_mult, 1.0);
+        const Lambda = getVal(last.lambda_eff, 0.0);
         let header = "", scan = "", action = "";
 
-        if (Lambda > 1.0 && G >= 1.0) {
-            header = "🟢 True Self-Growth";
-            scan = `Peak G=${peak_G.toFixed(1)}, C_t ended at ${(last.C_t*100).toFixed(1)}%.`;
-            action = `<div class="diagnostic-card"><span class="badge badge-green">Green</span> Good resonance. Try lowering <strong>L_cognitive</strong> to broaden reach.</div>`;
-        } else if (Lambda < 1.0 && G >= 1.0) {
-            header = "🟡 Pseudo Self-Growth";
-            scan = `Algorithm-driven exposure, Λ=${Lambda.toFixed(2)}.`;
-            action = `<div class="diagnostic-card"><span class="badge badge-yellow">Fix</span> Raise <strong>content_emotion_arousal</strong> or lower <strong>L_antipathy</strong>.</div>`;
-        } else if (Lambda > 1.0 && G < 1.0) {
-            header = "🔴 Choked";
-            scan = `Latent power blocked.`;
-            action = `<div class="diagnostic-card"><span class="badge badge-red">Fix</span> Reduce <strong>share_cost</strong> or <strong>L_operational</strong>.</div>`;
+        if (Lambda > 1.0 && G_active >= 1.0) {
+            header = "🟢 True Self-Growth (Stimulated Coherent Amplification)";
+            scan = `Standard Potential (G_std): <strong>${G_std.toFixed(2)}</strong> | Active Outcome (G_active): <strong>${G_active.toFixed(2)}</strong> | Environmental Multiplier (K_mult): <strong>${K_mult.toFixed(2)}x</strong>`;
+            action = `<div class="diagnostic-card"><span class="badge badge-green">Green</span> Strong propagation resonance. The environment is amplifying your content by <strong>${K_mult.toFixed(2)}x</strong>.</div>`;
+        } else if (Lambda < 1.0 && G_active >= 1.0) {
+            header = "🟡 Pseudo Self-Growth (Algorithm-Driven Flooding)";
+            scan = `Standard Potency (G_std): <strong>${G_std.toFixed(2)}</strong> | Active Outcome (G_active): <strong>${G_active.toFixed(2)}</strong> | Environmental Multiplier (K_mult): <strong>${K_mult.toFixed(2)}x</strong>`;
+            action = `<div class="diagnostic-card"><span class="badge badge-yellow">Fix</span> Your copy's intrinsic strength (G_std) is low, but the environment (A_algo/platform trending) is holding it up. Raise emotion arousal to trigger real self-growth.</div>`;
+        } else if (Lambda > 1.0 && G_active < 1.0) {
+            header = "🔴 Choked / Suffocated (High-Resistance Blockage)";
+            scan = `Standard Potency (G_std): <strong>${G_std.toFixed(2)}</strong> | Active Outcome (G_active): <strong>${G_active.toFixed(2)}</strong> | Environmental Multiplier (K_mult): <strong>${K_mult.toFixed(2)}x</strong>`;
+            action = `<div class="diagnostic-card"><span class="badge badge-red">Fix</span> Your content has propagation potential, but the current channel is extremely hostile (K_mult is compressing it down). Decrease share cost or choose a less crowded niche.</div>`;
         } else {
-            header = "💀 Decay";
-            scan = `No amplification.`;
-            action = `<div class="diagnostic-card"><span class="badge badge-red">Critical</span> Boost <strong>source_credibility</strong> and <strong>audience_trust_base</strong>.</div>`;
+            header = "💀 Decay (Sub-Threshold Dissipation)";
+            scan = `Standard Potency (G_std): <strong>${G_std.toFixed(2)}</strong> | Active Outcome (G_active): <strong>${G_active.toFixed(2)}</strong> | Environmental Multiplier (K_mult): <strong>${K_mult.toFixed(2)}x</strong>`;
+            action = `<div class="diagnostic-card"><span class="badge badge-red">Critical</span> Content has no propagation potential. Standard baseline is near-zero. Boost trust base and emotional value.</div>`;
         }
 
         document.getElementById("interpretation-box").innerHTML = `<h4>${header}</h4><p>${scan}</p>${action}`;
     }
 
-    window.copyForAI = function() {
-        if (!lastRecords.length) { alert("Run a simulation first!"); return; }
-        const prompt = `You are a Social Laser Dynamics analyst. Interpret these results and suggest one high-ROI action.\n\nTIMELINE:\n${JSON.stringify(lastRecords, null, 2)}`;
-        navigator.clipboard.writeText(prompt).then(() => alert("Copied!"));
+    // Mathematical and statistical summary generator (non-LLM) with full safety fallback
+    function generateSummaryReport(records) {
+        if (!records || records.length === 0) return "";
+        const first = records[0];
+        const last = records[records.length - 1];
+
+        // Find Peak G (exposure) and its tick
+        let peak_G = 0;
+        let peak_tick = 0;
+        let peak_record = last;
+        records.forEach(r => {
+            const g_val = getVal(r.G, 0.0);
+            if (g_val > peak_G) {
+                peak_G = g_val;
+                peak_tick = r.t;
+                peak_record = r;
+            }
+        });
+
+        // Calculate Cumulative Exposure (G_total)
+        const total_G = records.reduce((acc, r) => acc + getVal(r.G, 0.0), 0);
+
+        // Calculate average lambda_eff
+        const avg_lambda_eff = records.reduce((acc, r) => acc + getVal(r.lambda_eff, 0.0), 0) / records.length;
+
+        // Detect phase transition (did lambda_eff cross 1.0?)
+        const crossed_threshold = records.some(r => getVal(r.lambda_eff, 0.0) > 1.0);
+        const threshold_tick = records.findIndex(r => getVal(r.lambda_eff, 0.0) > 1.0);
+
+        // Detect saturation (did lambda_eff drop back below 1.0 after crossing?)
+        let saturated_tick = -1;
+        if (crossed_threshold && threshold_tick !== -1) {
+            const post_threshold_records = records.slice(threshold_tick);
+            const sat_record = post_threshold_records.find(r => getVal(r.lambda_eff, 0.0) < 1.0);
+            if (sat_record) {
+                saturated_tick = sat_record.t;
+            }
+        }
+
+        // Format a super compact, highly readable text summary for LLM context optimization
+        let report = `=== LASINFON SIMULATION SUMMARY REPORT ===\n`;
+        report += `Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})\n\n`;
+        report += `[INITIAL STATE (t=0)]:\n`;
+        report += `- G_active: ${getVal(first.G, 0.0).toFixed(2)} | G_std: ${getVal(first.G_std, getVal(first.G, 0.0)).toFixed(2)} | K_mult: ${getVal(first.K_mult, 1.0).toFixed(2)}x\n`;
+        report += `- R_t (Resonance): ${getVal(first.R_t, 0.0).toFixed(2)} | C_t (Active ratio): ${(getVal(first.C_t, 0.0)*100).toFixed(1)}% | mu_psych: ${getVal(first.mu_psych_t, 0.0).toFixed(2)}\n\n`;
+        report += `[PEAK STATE (t=${peak_tick})]:\n`;
+        report += `- Peak G_active: ${peak_G.toFixed(2)} | G_std: ${getVal(peak_record.G_std, getVal(peak_record.G, 0.0)).toFixed(2)} | K_mult: ${getVal(peak_record.K_mult, 1.0).toFixed(2)}x\n`;
+        report += `- R_t: ${getVal(peak_record.R_t, 0.0).toFixed(2)} | C_t: ${(getVal(peak_record.C_t, 0.0)*100).toFixed(1)}%\n\n`;
+        report += `[FINAL STATE (t=${last.t})]:\n`;
+        report += `- Final G_active: ${getVal(last.G, 0.0).toFixed(2)} | G_std: ${getVal(last.G_std, getVal(last.G, 0.0)).toFixed(2)} | K_mult: ${getVal(last.K_mult, 1.0).toFixed(2)}x\n`;
+        report += `- R_t: ${getVal(last.R_t, 0.0).toFixed(2)} | C_t: ${(getVal(last.C_t, 0.0)*100).toFixed(1)}%\n\n`;
+        report += `[INTEGRATED PROPAGATION METRICS]:\n`;
+        report += `- Cumulative Exposure (G_total): ${total_G.toFixed(2)}\n`;
+        report += `- Average Gain Multiplier (lambda_eff): ${avg_lambda_eff.toFixed(4)}\n`;
+        report += `- Autonomous Growth Crossed Threshold? ${crossed_threshold ? "YES (at t=" + threshold_tick + ")" : "NO"}\n`;
+        report += `- Gain Saturation Observed? ${saturated_tick !== -1 ? "YES (at t=" + saturated_tick + ")" : "NO"}\n`;
+        report += `- Final Phase Quadrant: ${last.quadrant}\n`;
+        report += `==========================================`;
+
+        return report;
+    }
+
+    // Dynamically compile both Standard Summary and Full AI Prompt into UI boxes with safety filters
+    function compileAIBoxes(records) {
+        if (!records || records.length === 0) return;
+        const summary = generateSummaryReport(records);
+        
+        // Show Standard Summary in left box
+        document.getElementById("summary-report-box").textContent = summary;
+
+        // Compile full prompt (System Prompt + Summary Report) in right box
+        const fullPrompt = `${SYSTEM_INTERPRETER_PROMPT}${summary}`;
+        document.getElementById("ai-compiled-prompt").value = fullPrompt;
+    }
+
+    // Secure, highly compatible fallback copy script for local and unsecure web protocols
+    window.selectAndCopyPrompt = function() {
+        const textarea = document.getElementById("ai-compiled-prompt");
+        if (!textarea.value) { alert("Run a simulation to compile prompt first!"); return; }
+        
+        textarea.select();
+        textarea.setSelectionRange(0, 99999); // For mobile devices
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                alert("📋 Copied compiled AI Diagnostic Prompt! Paste directly into ChatGPT, Claude, or DeepSeek Web Chat.");
+            } else {
+                alert("Please press Cmd+C (or Ctrl+C) to copy the highlighted text manually.");
+            }
+        } catch (err) {
+            alert("Please press Cmd+C (or Ctrl+C) to copy the highlighted text manually.");
+        }
     };
+
+    // Lightweight markdown-to-HTML parser to render AI Web Chat response inside the dashboard
+    function renderAIResponse(text) {
+        if (!text.trim()) return;
+        let html = text
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") // escape HTML
+            .replace(/^### (.*$)/gim, '<h4>$1</h4>')
+            .replace(/^## (.*$)/gim, '<h3>$1</h3>')
+            .replace(/^# (.*$)/gim, '<h2>$1</h2>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br>');
+        
+        document.getElementById("interpretation-box").innerHTML = `<h4>🤖 AI Expert Diagnostic Scan</h4><div style="font-size:12px; color:var(--text-muted); text-align:left;">${html}</div>`;
+    }
 
     start();
 </script>
