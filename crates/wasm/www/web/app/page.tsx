@@ -152,7 +152,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
           K_soil: { base: 0.3, slope: 1.2, w_density: 0.6, w_connect: 0.4 },
           K_comp: { base: 1.0, slope: 0.7 },
           omega: { scale: 2.5, denom: 1000 }
-                }
+        }
       };
 
       const result_string = wasmModule.simulate(
@@ -175,6 +175,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
       }));
       await new Promise((r) => setTimeout(r, 400));
 
+      // Final Transition: diagnosing -> rendering
       setDiagnosticResult(records);
 
     } catch (err: any) {
@@ -376,14 +377,21 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
                 <div>
                   <label className="text-sm font-bold text-slate-800 mb-2">Enter Raw Copytext</label>
                   <p className="text-xs text-slate-400 mb-4">Input your original advertisement copy, video script, or social article</p>
-                  <textarea
-                    value={inputs.content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Paste your copy here (minimum 5 characters)..."
-                    className="my-4 h-40 focus:border-brand-primary font-mono text-sm"
-                  />
-                  <div className="flex justify-end text-[11px] text-slate-400 font-bold">
-                    {inputs.content.length} characters
+                  
+                  {/* Premium Sandbox Container (Ginlix IDE / Metrology Editor Style) */}
+                  <div className="relative rounded-xl border border-slate-200 bg-slate-50/50 p-4 focus-within:ring-4 focus-within:ring-blue-500/10 focus-within:border-brand-primary transition-all duration-150 my-4">
+                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 select-none">
+                      <span>Metrology Editor</span>
+                      <span className={inputs.content.length >= 5 ? "text-brand-green" : "text-slate-400"}>
+                        {inputs.content.length} chars
+                      </span>
+                    </div>
+                    <textarea
+                      value={inputs.content}
+                      onChange={(e) => setContent(e.target.value)}
+                      placeholder="Paste your copy here (minimum 5 characters)..."
+                      className="w-full bg-transparent border-none p-0 focus:ring-0 text-slate-800 font-mono text-sm resize-none focus:outline-none h-36 leading-relaxed placeholder-slate-400"
+                    />
                   </div>
                 </div>
               )}
@@ -469,7 +477,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <Card className="flex flex-col p-6">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  Standard Potency (G_std)
+                  Standard Potential (G_std)
                 </span>
                 <span className="text-3xl font-bold text-brand-primary tracking-tight">
                   {getVal(

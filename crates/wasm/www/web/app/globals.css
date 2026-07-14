@@ -1,14 +1,24 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --background: #f6f8fa;
-  --foreground: #0f172a;
+/* ── Tailwind CSS v4 Theme Token Configurations ── */
+@theme {
+  /* Virgil Pana Dribbble Premium Color Palette */
+  --color-brand-primary: #2459F1;
+  --color-brand-primaryHover: #1A46C7;
+  --color-brand-primary-hover: #1A46C7;
+  --color-brand-purple: #7C3AED;
+  --color-brand-pink: #DB2777;
+  --color-brand-blue: #3B82F6;
+  --color-brand-green: #16A34A;
+  --color-brand-red: #EF4444;
+
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-900: #0f172a;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: system-ui, -apple-system, sans-serif;
+  background-color: var(--color-slate-50);
+  color: var(--color-color-slate-900);
 }
