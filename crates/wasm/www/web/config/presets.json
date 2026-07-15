@@ -35,8 +35,44 @@
       "env": { "surge_match": 5.0, "current_direction": 5.0, "terrain_passability": 5.0, "population_density": 5.0, "connectivity": 5.0, "raw_suppression": 3.0, "L_cognitive": 2.0, "L_operational": 1.0, "L_antipathy": 2.0, "content_emotion_intensity": 8.5, "audience_resonance_match": 5.0, "environment_emotion_fit": 5.0 }
     }
   },
-  "video": {
-    "name": "A. Gen Z + Short-video Platform (15 ticks)",
+  "douyin": {
+    "name": "A. Gen Z + Douyin Short-video Platform (15 Ticks)",
+    "max_ticks": 15,
+    "sigma": 0.05,
+    "seed": 123,
+    "config": {
+      "system": { "alpha": 0.2 },
+      "stochastic": { "eta": 0.3, "theta": 0.01, "gamma_saturation": 0.5 },
+      "state_transfer": {
+        "gamma_social_proof": 0.5, "gamma_self_catalysis": 0.1, "gamma_social_pressure": 0.3,
+        "gamma_algo_trending": 0.05, "attention_decay": 0.08, "lambda_R_relaxation": 0.1,
+        "lambda_K_relaxation": 0.1, "lambda_C_relaxation": 0.3
+      },
+      "omega": { "trigger_T": 6, "trigger_R": 7, "trigger_social_currency": 7 },
+      "weights": {
+        "seed": { "w_emotion_arousal": 0.21, "w_social_currency": 0.18, "w_practical_value": 0.09, "w_info_advantage": 0.12, "w_narrative_completeness": 0.125, "w_remix_openness": 0.125, "w_source_credibility": 0.105, "w_personification": 0.045 },
+        "S": { "w_cognitive": 0.6, "w_operational": 0.4 },
+        "R": { "w_content": 0.35, "w_audience": 0.4, "w_environment": 0.25 },
+        "mu_psych": { "w_antipathy": 0.6, "w_suspicion": 0.4 },
+        "trust": { "w_source": 0.6, "w_audience": 0.4 },
+        "W": { "w_enhance": 0.4, "w_trust": 0.3, "w_unique": 0.2, "w_R": 0.1 }
+      },
+      "mapping": {
+        "K_pot": { "base": 0.8, "slope": 0.7, "w_surge": 0.4, "w_current": 0.4, "w_terrain": 0.2 },
+        "K_soil": { "base": 0.3, "slope": 1.2, "w_density": 0.6, "w_connect": 0.4 },
+        "K_comp": { "base": 1.0, "slope": 0.7 },
+        "omega": { "scale": 2.5, "denom": 1000.0 }
+      }
+    },
+    "scenario": {
+      "scores": { "content_emotion_arousal": 8.5, "social_currency_attr": 8.0, "practical_value": 4.0, "uniqueness": 8.0, "innovation": 7.0, "enhancement": 6.0, "strangeness": 8.0, "narrative_completeness": 7.0, "remix_openness": 6.0, "source_credibility": 5.0, "personification": 6.0 },
+      "meme": { "social_currency": 8.0, "share_cost": 2.0, "audience_trust_base": 6.0, "share_circle_preference": 3.0 },
+      "field": { "t": 0, "C_t": 0.0, "R_t": 8.1, "R_0": 8.1, "mu_psych_t": 1.8, "K_pot_t": 1.1, "K_pot_0": 1.1, "K_soil": 1.2, "K_comp": 0.8, "K_base": 1.0, "A_algo": 80.0, "T": 1.0, "T_effective": 0.8, "challengability_score": 5.0, "circle_opposition": 8.0, "social_currency_t": 8.0 },
+      "env": { "surge_match": 7.0, "current_direction": 6.0, "terrain_passability": 6.0, "population_density": 8.0, "connectivity": 7.0, "raw_suppression": 2.0, "L_cognitive": 3.0, "L_operational": 2.0, "L_antipathy": 1.0, "content_emotion_intensity": 8.5, "audience_resonance_match": 8.0, "environment_emotion_fit": 7.0 }
+    }
+  },
+  "xiaohongshu": {
+    "name": "B. Xiaohongshu Visual Seeding (15 ticks)",
     "max_ticks": 15,
     "sigma": 0.05,
     "seed": 123,
@@ -71,8 +107,8 @@
       "env": { "surge_match": 7.0, "current_direction": 6.0, "terrain_passability": 6.0, "population_density": 8.0, "connectivity": 7.0, "raw_suppression": 2.0, "L_cognitive": 3.0, "L_operational": 2.0, "L_antipathy": 1.0, "content_emotion_intensity": 8.5, "audience_resonance_match": 8.0, "environment_emotion_fit": 7.0 }
     }
   },
-  "professional": {
-    "name": "B. Professional Network + Knowledge Parents (15 Ticks)",
+  "wechat": {
+    "name": "D. WeChat Private Circle (15 Ticks)",
     "max_ticks": 15,
     "sigma": 0.05,
     "seed": 123,
@@ -81,7 +117,7 @@
       "stochastic": { "eta": 0.2, "theta": 0.01, "gamma_saturation": 0.5 },
       "state_transfer": {
         "gamma_social_proof": 0.4, "gamma_self_catalysis": 0.08, "gamma_social_pressure": 0.2,
-        "gamma_algo_trending": 0.02, "attention_decay": 0.01, "lambda_R_relaxation": 0.15,
+        "gamma_algo_trending": 0.02, "attention_decay": 0.02, "lambda_R_relaxation": 0.15,
         "lambda_K_relaxation": 0.15, "lambda_C_relaxation": 0.3
       },
       "omega": { "trigger_T": 6, "trigger_R": 7, "trigger_social_currency": 7 },
@@ -94,7 +130,7 @@
         "W": { "w_enhance": 0.4, "w_trust": 0.3, "w_unique": 0.2, "w_R": 0.1 }
       },
       "mapping": {
-        "K_pot": { "base": 0.8, "slope": 0.7, "w_surge": 0.4, "w_current": 0.4, "w_terrain: ": 0.2 },
+        "K_pot": { "base": 0.8, "slope": 0.7, "w_surge": 0.4, "w_current": 0.4, "w_terrain": 0.2 },
         "K_soil": { "base": 0.3, "slope": 1.2, "w_density": 0.6, "w_connect": 0.4 },
         "K_comp": { "base": 1.0, "slope": 0.7 },
         "omega": { "scale": 2.5, "denom": 1000 }
