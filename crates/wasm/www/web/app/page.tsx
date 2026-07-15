@@ -51,13 +51,6 @@ export default function Home() {
       .catch((err) => console.error("Failed to load WASM in Next.js", err));
   }, []);
 
-  // ── Render Charts on State Change ──
-  useEffect(() => {
-    if (state === "rendering" && activeDiagnosticResult && wasmModule) {
-      drawAllCharts(activeDiagnosticResult);
-    }
-  }, [state, activeDiagnosticResult, wasmModule]);
-
   const getVal = (val: any, def = 0.0) => (val !== undefined && val !== null ? val : def);
 
   // ── Non-LLM Mathematical Summary Generator ──
