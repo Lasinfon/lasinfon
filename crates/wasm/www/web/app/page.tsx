@@ -35,6 +35,7 @@ export default function Home() {
 
   const [wasmModule, setWasmModule] = useState<any>(null);
   const [logIndex, setLogIndex] = useState(0);
+  const [apiEngine, setApiEngine] = useState<string>("Dev Sandbox (Mock)");
 
   // ── Hover interaction state variables ──
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -49,6 +50,13 @@ export default function Home() {
       })
       .catch((err) => console.error("Failed to load WASM in Next.js", err));
   }, []);
+
+  // ── Render Charts on State Change ──
+  useEffect(() => {
+    if (state === "rendering" && activeDiagnosticResult && wasmModule) {
+      drawAllCharts(activeDiagnosticResult);
+    }
+  }, [state, activeDiagnosticResult, wasmModule]);
 
   const getVal = (val: any, def = 0.0) => (val !== undefined && val !== null ? val : def);
 
@@ -136,6 +144,13 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
 
       if (!res.ok) throw new Error("Contract verification failed");
       const scenarioData = await res.json();
+      
+      // Extract active API Engine type (Mock vs. LLM)
+      if (scenarioData.engine) {
+        setApiEngine(scenarioData.engine);
+      } else {
+        setApiEngine("Dev Sandbox (Mock)");
+      }
 
       setLogIndex(1);
       useStore.setState((state) => ({
@@ -456,7 +471,7 @@ Please analyze the following summarized simulation report:
                           onChange={(e) => setMaxTicks(Number(e.target.value))}
                           className="w-full px-2 py-1 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary"
                           min={1}
-                          max={100}
+                          max={300}
                         />
                       </div>
                       <div>
@@ -698,7 +713,7 @@ Please analyze the following summarized simulation report:
 
                     {/* X-Axis Tick Labels */}
                     {activeDiagnosticResult.map((r: any, idx: number) => (
-                      idx % 2 === 0 && (
+                      idx % Math.max(1, Math.round(len / 10)) === 0 && (
                         <text
                           key={`x-${idx}`}
                           x={len > 1 ? pad + (idx / (len - 1)) * chartW : pad}
@@ -937,6 +952,36 @@ Please analyze the following summarized simulation report:
             <div className="interpretation-box" id="interpretation-box">
               <em>Generating diagnostic scan ...</em>
             </div>
+
+            {/* ── ⚙️ METROLOGY INSPECTOR & CALIBRATION SNAPSHOT (SaaS Metrology Panel) ── */}
+            <Card className="p-6 border border-slate-200 hover:shadow-md transition-all duration-300">
+              <div className="card-title mb-4">⚙️ METROLOGY INSPECTOR & CALIBRATION SNAPSHOT</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-xs text-slate-600 font-mono">
+                <div className="flex flex-col gap-1 border-r border-slate-100 pr-4">
+                  <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Active Preset</span>
+                  <span className="font-bold text-slate-800">{inputs.platform} Mode</span>
+                </div>
+                <div className="flex flex-col gap-1 border-r border-slate-100 pr-4">
+                  <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Simulation parameters</span>
+                  <span>Max Ticks: <span className="font-bold text-slate-800">{maxTicks}</span></span>
+                  <span>Sigma: <span className="font-bold text-slate-800">{sigma}</span></span>
+                  <span>Seed: <span className="font-bold text-slate-800">{seed}</span></span>
+                </div>
+                <div className="flex flex-col gap-1 border-r border-slate-100 pr-4">
+                  <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Active API Engine</span>
+                  <span className={`badge ${apiEngine.includes("LLM") ? "badge-green" : "badge-yellow"} w-fit mt-0.5`}>
+                    {apiEngine}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">WASM Registry</span>
+                  <span className="text-brand-green font-bold flex items-center gap-1">
+                    <span className="inline-block w-2 h-2 rounded-full bg-brand-green animate-ping" />
+                    LINKED & CALIBRATED
+                  </span>
+                </div>
+              </div>
+            </Card>
 
             {/* Double-Box Prompt Compilation and Static Summary Section */}
             <div className="report-section">
