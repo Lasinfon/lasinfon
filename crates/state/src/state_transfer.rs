@@ -77,6 +77,18 @@ pub fn apply_attention_decay(R_temp: f64, attention_decay: f64) -> f64 {
     }
 }
 
+/// Dynamic Algorithmic Recommended Decay (SaaS Content Aging)
+/// Simulates how platform recomendation weight decays exponentially as audience attention cools down
+pub fn apply_algorithmic_decay(A_algo_t: f64, attention_decay: f64) -> f64 {
+    if attention_decay <= 0.0 {
+        A_algo_t
+    } else {
+        // Algorithm decay constant is linearly coupled with attention decay (lambda_A = delta * 1.5)
+        let decayed = A_algo_t * exp(-attention_decay * 1.5);
+        decayed.max(1.0) // Clamp to minimum platform baseline recommendation of 1.0
+    }
+}
+
 /// Equations 6 & 7: Relaxation cooling.
 pub fn apply_relaxation_cooling(
     R_temp: f64, R_0: f64,
@@ -108,7 +120,7 @@ pub fn tick(
     // 1. Decay psychological friction
     let mu_next = decay_psych_friction(
         field.mu_psych_t,
-        field.C_t, // using current C_t or next? Typically the equation uses the same time step's C.
+        field.C_t,
         params.gamma_social_proof,
     );
 
@@ -136,6 +148,9 @@ pub fn tick(
     // 5. Apply attention decay
     let R_temp_decayed = apply_attention_decay(R_temp, params.attention_decay);
 
+    // 5.1 Apply algorithmic recommendation decay (conforms to Content Aging specs)
+    let A_algo_next = apply_algorithmic_decay(field.A_algo, params.attention_decay);
+
     // 6. Relaxation cooling
     let (R_cooled, K_pot_cooled) = apply_relaxation_cooling(
         R_temp_decayed,
@@ -157,7 +172,7 @@ pub fn tick(
         K_soil: field.K_soil,
         K_comp: field.K_comp,
         K_base: field.K_base,
-        A_algo: field.A_algo,
+        A_algo: A_algo_next,
         T: field.T,
         T_effective: field.T_effective,
         challengability_score: field.challengability_score,
