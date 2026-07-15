@@ -16,6 +16,9 @@ export default function Home() {
     inputs,
     diagnosticLogs,
     activeDiagnosticResult,
+    maxTicks,
+    sigma,
+    seed,
     startFlow,
     setPlatform,
     setPurpose,
@@ -23,6 +26,9 @@ export default function Home() {
     nextStep,
     prevStep,
     resetFlow,
+    setMaxTicks,
+    setSigma,
+    setSeed,
     setDiagnosing,
     setDiagnosticResult,
   } = useStore();
@@ -43,13 +49,6 @@ export default function Home() {
       })
       .catch((err) => console.error("Failed to load WASM in Next.js", err));
   }, []);
-
-  // ── Render Charts on State Change ──
-  useEffect(() => {
-    if (state === "rendering" && activeDiagnosticResult && wasmModule) {
-      drawAllCharts(activeDiagnosticResult);
-    }
-  }, [state, activeDiagnosticResult, wasmModule]);
 
   const getVal = (val: any, def = 0.0) => (val !== undefined && val !== null ? val : def);
 
@@ -76,14 +75,18 @@ export default function Home() {
     return `=== LASINFON SIMULATION SUMMARY REPORT ===
 Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
 
-[INITIAL STATE (t=0)]:\n- G_active: ${getVal(first.G).toFixed(2)} | G_std: ${getVal(first.G_std, first.G).toFixed(2)} | K_mult: ${getVal(first.K_mult, 1.0).toFixed(2)}x
+[INITIAL STATE (t=0)]:
+- G_active: ${getVal(first.G).toFixed(2)} | G_std: ${getVal(first.G_std, first.G).toFixed(2)} | K_mult: ${getVal(first.K_mult, 1.0).toFixed(2)}x
 - R_t: ${getVal(first.R_t).toFixed(2)} | C_t: ${(getVal(first.C_t)*100).toFixed(1)}% | mu_psych: ${getVal(first.mu_psych_t).toFixed(2)}
 
-[PEAK STATE (t=${peak_tick})]:\n- Peak G_active: ${peak_G.toFixed(2)} | G_std: ${getVal(records[peak_tick]?.G_std, peak_G).toFixed(2)} | K_mult: ${getVal(records[peak_tick]?.K_mult, 1.0).toFixed(2)}x
+[PEAK STATE (t=${peak_tick})]:
+- Peak G_active: ${peak_G.toFixed(2)} | G_std: ${getVal(records[peak_tick]?.G_std, peak_G).toFixed(2)} | K_mult: ${getVal(records[peak_tick]?.K_mult, 1.0).toFixed(2)}x
 
-[FINAL STATE (t=${last.t})]:\n- Final G_active: ${getVal(last.G).toFixed(2)} | G_std: ${getVal(last.G_std, last.G).toFixed(2)} | K_mult: ${getVal(last.K_mult, 1.0).toFixed(2)}x
+[FINAL STATE (t=${last.t})]:
+- Final G_active: ${getVal(last.G).toFixed(2)} | G_std: ${getVal(last.G_std, last.G).toFixed(2)} | K_mult: ${getVal(last.K_mult, 1.0).toFixed(2)}x
 
-[PROPAGATION METRICS]:\n- Cumulative Exposure (G_total): ${total_G.toFixed(2)}
+[PROPAGATION METRICS]:
+- Cumulative Exposure (G_total): ${total_G.toFixed(2)}
 - Average Gain Multiplier (lambda_eff): ${avg_lambda_eff.toFixed(4)}
 - Autonomous Growth Crossed Threshold? ${crossed_threshold ? "YES (at t=" + threshold_tick + ")" : "NO"}
 - Final Phase Quadrant: ${last.quadrant}
@@ -141,15 +144,15 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
       if (!wasmModule) throw new Error("WASM engine not ready");
 
       // Load config template from presets.json dynamically (No more hardcoded magic configs!)
-      const targetPreset = (presetsData as any)[inputs.platform.toLowerCase() === "douyin" ? "video" : "professional"] 
-        || (presetsData as any)["vacuum"];
+      const targetPreset = (presetsData as any)[inputs.platform.toLowerCase()] 
+        || (presetsData as any)["standard"];
 
       const result_string = wasmModule.simulate(
         JSON.stringify(targetPreset.config),
         JSON.stringify(scenarioData),
-        targetPreset.max_ticks,
-        targetPreset.sigma,
-        BigInt(targetPreset.seed),
+        maxTicks, // Configurable via UI
+        sigma,    // Configurable via UI
+        BigInt(seed), // Configurable via UI
         false
       );
 
@@ -341,7 +344,7 @@ Please analyze the following summarized simulation report:
                   <p className="text-xs text-slate-400 mb-4">Choose the dominant social environment for your campaign</p>
                   <div className="flex flex-col gap-3 my-4">
                     {[
-                      { name: "Vacuum", desc: "Standard Vacuum Reference • K=1.0 standard physics model baseline" },
+                      { name: "Standard", desc: "Standard Metrology Reference • Standard platform/circle/environment calibration baseline" },
                       { name: "Douyin", desc: "High-Arousal Short-Video Resonance • Optimized for high emotional amplification" },
                       { name: "Xiaohongshu", desc: "Visual Seeding & Social Currency • Tailored for organic recommendation and aesthetics" }
                     ].map((p) => (
@@ -499,7 +502,7 @@ Please analyze the following summarized simulation report:
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                   Standard Potency (G_std)
                 </span>
-                <span className="text-3xl font-extrabold text-brand-primary tracking-tight">
+                <span className="text-3xl font-bold text-brand-primary tracking-tight">
                   {getVal(
                     activeDiagnosticResult[activeDiagnosticResult.length - 1].G_std,
                     activeDiagnosticResult[activeDiagnosticResult.length - 1].G
@@ -655,7 +658,7 @@ Please analyze the following summarized simulation report:
                 <div className="flex items-center justify-center h-64">
                   {/* CSS Grid Matrix: 100% Vector crispness on Retina screens */}
                   <div 
-                    className="grid gap-[2px] bg-slate-50 border border-slate-100 rounded-xl p-[3px] w-56 h-60 shadow-inner"
+                    className="grid gap-[2px] bg-slate-100 border border-slate-100 rounded-xl p-[3px] w-56 h-60 shadow-inner"
                     style={{ gridTemplateColumns: 'repeat(15, minmax(0, 1fr))' }}
                   >
                     {Array.from({ length: 225 }).map((_, idx) => {
@@ -782,7 +785,7 @@ Please analyze the following summarized simulation report:
                   <div className="bg-slate-50 border-b border-slate-100 p-4">
                     <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest">📊 Standard Summary Report</h4>
                   </div>
-                  <pre className="m-0 rounded-none bg-white text-slate-700 p-4 text-[11px] font-mono border-none overflow-y-auto flex-1 h-36">
+                  <pre className="m-0 rounded-none bg-white text-slate-700 p-4 text-[11px] font-mono border-none overflow-x-auto flex-1 h-36">
                     {generateSummaryText(activeDiagnosticResult)}
                   </pre>
                 </Card>
@@ -804,7 +807,7 @@ Please analyze the following summarized simulation report:
               </div>
               <div className="report-box">
                 <h4>💬 Compiled AI Prompt (大一统 AI 诊断整包)</h4>
-                <textarea id="ai-compiled-prompt" readonly placeholder="Run simulation to compile prompt..."></textarea>
+                <textarea id="ai-compiled-prompt" readOnly placeholder="Run simulation to compile prompt..."></textarea>
                 <button className="report-btn shadow-md shadow-blue-500/10" id="copy-ai-btn" onClick={copyDiagnosticPrompt}>
                   📋 Copy Whole Prompt (For Web Chat)
                 </button>
