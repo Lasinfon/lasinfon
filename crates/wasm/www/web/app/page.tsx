@@ -36,9 +36,9 @@ export default function Home() {
   const [wasmModule, setWasmModule] = useState<any>(null);
   const [logIndex, setLogIndex] = useState(0);
 
-  const gridCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const chartCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const metricsCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  // ── Hover interaction state variables ──
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
 
   // ── Load WASM Dynamically from Next.js Public Directory ──
   useEffect(() => {
@@ -106,6 +106,20 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
     return d;
   };
 
+  // ── Mousemove interactive tooltip logic ──
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = e.clientX - rect.left - pad;
+    const ratio = x / chartW;
+    const idx = Math.round(ratio * (len - 1));
+    if (idx >= 0 && idx < len) {
+      setHoverIndex(idx);
+    }
+  };
+
+  const handleMouseLeave = () => setHoverIndex(null);
+
   // ── Trigger Diagnostic Event (Elevator Mirror Lifecycle) ──
   const executeDiagnostics = async () => {
     setLogIndex(0);
@@ -150,9 +164,9 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
       const result_string = wasmModule.simulate(
         JSON.stringify(targetPreset.config),
         JSON.stringify(scenarioData),
-        maxTicks, // Configurable via UI
-        sigma,    // Configurable via UI
-        BigInt(seed), // Configurable via UI
+        maxTicks, // Configurable via UI state
+        sigma,    // Configurable via UI state
+        BigInt(seed), // Configurable via UI state
         false
       );
 
@@ -167,6 +181,7 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
       }));
       await new Promise((r) => setTimeout(r, 400));
 
+      // Final Transition: diagnosing -> rendering
       setDiagnosticResult(records);
 
     } catch (err: any) {
@@ -346,12 +361,22 @@ Please analyze the following summarized simulation report:
                     {[
                       { name: "Standard", desc: "Standard Metrology Reference • Standard platform/circle/environment calibration baseline" },
                       { name: "Douyin", desc: "High-Arousal Short-Video Resonance • Optimized for high emotional amplification" },
-                      { name: "Xiaohongshu", desc: "Visual Seeding & Social Currency • Tailored for organic recommendation and aesthetics" }
+                      { name: "Xiaohongshu", desc: "Visual Seeding & Social Currency • Tailored for organic recommendation and aesthetics" },
+                      { name: "WeChat", desc: "Private Circle Trust-Based Propagation • Designed for high-authority private forwarding" }
                     ].map((p) => (
                       <div
                         key={p.name}
-                        onClick={() => setPlatform(p.name)}
-                        className={`p-4 border rounded-xl text-left cursor-pointer transition-all flex flex-col gap-1 ${
+                        onClick={() => {
+                          setPlatform(p.name);
+                          // Auto load configurable presets to Zustand store on select (No more hardcoding!)
+                          const targetPreset = (presetsData as any)[p.name.toLowerCase()];
+                          if (targetPreset) {
+                            setMaxTicks(targetPreset.max_ticks);
+                            setSigma(targetPreset.sigma);
+                            setSeed(targetPreset.seed.toString());
+                          }
+                        }}
+                        className={`p-5 border rounded-xl text-left cursor-pointer transition-all flex flex-col gap-1 ${
                           inputs.platform === p.name
                             ? "border-brand-primary bg-blue-50/50 shadow-sm"
                             : "border-slate-200 hover:border-slate-300"
@@ -416,6 +441,47 @@ Please analyze the following summarized simulation report:
                       className="w-full bg-transparent border-none p-0 focus:ring-0 text-slate-800 font-mono text-sm resize-none focus:outline-none h-36 leading-relaxed placeholder-slate-400"
                     />
                   </div>
+
+                  {/* ── ⚙️ Advanced Controls (Ticks · Sigma · Seed - Conforms to SaaS v6.2.0 spec) ── */}
+                  <details className="mt-4 border-t border-slate-200 pt-4">
+                    <summary className="text-xs font-bold text-slate-400 uppercase tracking-widest cursor-pointer hover:text-slate-600 transition-colors">
+                      ⚙️ Advanced Controls (Ticks · Sigma · Seed)
+                    </summary>
+                    <div className="mt-3 grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="text-[10px] font-medium text-slate-500 block mb-1">Max Ticks</label>
+                        <input
+                          type="number"
+                          value={maxTicks}
+                          onChange={(e) => setMaxTicks(Number(e.target.value))}
+                          className="w-full px-2 py-1 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary"
+                          min={1}
+                          max={100}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-medium text-slate-500 block mb-1">Sigma (Noise)</label>
+                        <input
+                          type="number"
+                          value={sigma}
+                          onChange={(e) => setSigma(Number(e.target.value))}
+                          className="w-full px-2 py-1 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary"
+                          min={0}
+                          max={1}
+                          step={0.01}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-medium text-slate-500 block mb-1">Seed</label>
+                        <input
+                          type="text"
+                          value={seed}
+                          onChange={(e) => setSeed(e.target.value)}
+                          className="w-full px-2 py-1 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-brand-primary font-mono"
+                        />
+                      </div>
+                    </div>
+                  </details>
                 </div>
               )}
 
@@ -494,8 +560,29 @@ Please analyze the following summarized simulation report:
 
         {/* ── STATE 4: RENDERING (RESULTS COCKPIT - DRIBBBLE INSPIRED) ── */}
         {state === "rendering" && activeDiagnosticResult && (
-          <div className="w-full flex flex-col gap-6">
+          <div className="w-full flex flex-col gap-6 relative">
             
+            {/* Interactive Tooltip Card for curves */}
+            {hoverIndex !== null && (
+              <div
+                className="absolute pointer-events-none bg-white/95 backdrop-blur-sm border border-slate-200 rounded-xl shadow-lg p-3 text-xs z-50 transition-opacity"
+                style={{
+                  left: Math.max(100, Math.min(chartW + pad * 2 - 100, pad + (hoverIndex / (len - 1)) * chartW)),
+                  top: 130,
+                  transform: 'translateX(-50%)',
+                }}
+              >
+                <div className="font-bold text-slate-800">Time tick: t = {activeDiagnosticResult[hoverIndex].t}</div>
+                <div className="flex gap-4 mt-1 font-mono">
+                  <span className="text-brand-primary">G_std: {getVal(activeDiagnosticResult[hoverIndex].G_std, getVal(activeDiagnosticResult[hoverIndex].G)).toFixed(2)}</span>
+                  <span className="text-brand-purple">G_active: {getVal(activeDiagnosticResult[hoverIndex].G).toFixed(2)}</span>
+                </div>
+                <div className="flex gap-4 mt-0.5 font-mono">
+                  <span className="text-brand-pink">K_mult: {getVal(activeDiagnosticResult[hoverIndex].K_mult, 1.0).toFixed(2)}x</span>
+                </div>
+              </div>
+            )}
+
             {/* Top 4 KPI Grid Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <Card className="flex flex-col p-6 border border-slate-200 hover:shadow-md transition-all duration-300">
@@ -567,7 +654,7 @@ Please analyze the following summarized simulation report:
             {/* Main Graphs Dashboard Grid - Pristine SVG Vector Engining */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Chart (Exposure G Curve - 100% Crisp Vector SVG) */}
-              <Card className="lg:col-span-2 p-6 flex flex-col justify-between border border-slate-200 hover:shadow-md transition-all duration-300">
+              <Card className="lg:col-span-2 p-6 flex flex-col justify-between border border-slate-200 hover:shadow-md transition-all duration-300 relative">
                 <div className="flex justify-between items-center mb-4">
                   <div className="card-title">Dual-Track Exposure Wave (G)</div>
                   <div className="flex gap-4">
@@ -576,9 +663,15 @@ Please analyze the following summarized simulation report:
                   </div>
                 </div>
                 
-                {/* ── Pristine Responsive SVG Vector Engine ── */}
+                {/* ── Pristine Responsive SVG Vector Engine with Tooltip Mouse Hooks ── */}
                 <div className="w-full h-64 relative">
-                  <svg viewBox={`0 0 ${chartW + pad * 2} ${chartH + pad * 2}`} className="w-full h-full">
+                  <svg 
+                    ref={svgRef}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                    viewBox={`0 0 ${chartW + pad * 2} ${chartH + pad * 2}`} 
+                    className="w-full h-full cursor-crosshair"
+                  >
                     <defs>
                       <linearGradient id="purpleGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.22" />
@@ -602,6 +695,41 @@ Please analyze the following summarized simulation report:
                         strokeWidth="1"
                       />
                     ))}
+
+                    {/* X-Axis Tick Labels */}
+                    {activeDiagnosticResult.map((r: any, idx: number) => (
+                      idx % 2 === 0 && (
+                        <text
+                          key={`x-${idx}`}
+                          x={len > 1 ? pad + (idx / (len - 1)) * chartW : pad}
+                          y={pad + chartH + 18}
+                          fontSize="9"
+                          fill="#94a3b8"
+                          textAnchor="middle"
+                          className="font-mono font-bold select-none"
+                        >
+                          t={r.t}
+                        </text>
+                      )
+                    ))}
+
+                    {/* Y-Axis Value Labels (5 steps) */}
+                    {[0, 1, 2, 3, 4].map((i) => {
+                      const val = (i / 4) * max_G;
+                      return (
+                        <text
+                          key={`y-${i}`}
+                          x={pad - 8}
+                          y={pad + chartH - (i / 4) * chartH + 3}
+                          fontSize="9"
+                          fill="#94a3b8"
+                          textAnchor="end"
+                          className="font-mono font-bold select-none"
+                        >
+                          {val.toFixed(1)}
+                        </text>
+                      );
+                    })}
 
                     {/* standard reference (SRP) Vector Gradient & Line */}
                     {stdAreaD && <path d={stdAreaD} fill="url(#blueGrad)" />}
@@ -627,11 +755,24 @@ Please analyze the following summarized simulation report:
                       />
                     )}
 
+                    {/* Interactive Vertical Guidance Pointer Line */}
+                    {hoverIndex !== null && (
+                      <line
+                        x1={len > 1 ? pad + (hoverIndex / (len - 1)) * chartW : pad}
+                        y1={pad}
+                        x2={len > 1 ? pad + (hoverIndex / (len - 1)) * chartW : pad}
+                        y2={pad + chartH}
+                        stroke="#94a3b8"
+                        strokeWidth="1"
+                        strokeDasharray="2,2"
+                      />
+                    )}
+
                     {/* Current Anchor Markers */}
                     {points_std.length > 0 && (
                       <circle
-                        cx={points_std[points_std.length - 1].x}
-                        cy={points_std[points_std.length - 1].y}
+                        cx={hoverIndex !== null ? points_std[hoverIndex].x : points_std[points_std.length - 1].x}
+                        cy={hoverIndex !== null ? points_std[hoverIndex].y : points_std[points_std.length - 1].y}
                         r="4.5"
                         fill="#ffffff"
                         stroke="#2563eb"
@@ -640,8 +781,8 @@ Please analyze the following summarized simulation report:
                     )}
                     {points_active.length > 0 && (
                       <circle
-                        cx={points_active[points_active.length - 1].x}
-                        cy={points_active[points_active.length - 1].y}
+                        cx={hoverIndex !== null ? points_active[hoverIndex].x : points_active[points_active.length - 1].x}
+                        cy={hoverIndex !== null ? points_active[hoverIndex].y : points_active[points_active.length - 1].y}
                         r="5"
                         fill="#ffffff"
                         stroke="#7c3aed"
