@@ -2,19 +2,20 @@ import os
 import http.server
 import socketserver
 
-# Automatically lock the working directory to the directory of this script (crates/wasm)
+# Automatically locate and serve the 'crates/wasm/www' directory directly as the root of port 8000
 script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
+serving_dir = os.path.join(script_dir, 'www')
+os.chdir(serving_dir)
 
 PORT = 8000
 Handler = http.server.SimpleHTTPRequestHandler
 
-# Force map .wasm files to 'application/wasm' (essential for macOS Python core)
+# Force map correct MIME types (essential for macOS Python core)
 Handler.extensions_map.update({
     '.wasm': 'application/wasm',
     '.js': 'application/javascript',
 })
 
 with socketserver.TCPServer(("", PORT), Handler) as httpd:
-    print("Serving Lasinfon v6.1.1 Light Dashboard at http://localhost:8000/www/index.html")
+    print("Serving Lasinfon v6.1.1 on http://localhost:8000")
     httpd.serve_forever()

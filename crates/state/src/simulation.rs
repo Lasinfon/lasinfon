@@ -105,19 +105,33 @@ pub fn run_simulation(
             env.L_cognitive, env.L_operational,
             s_weights.w_cognitive, s_weights.w_operational,
         );
-        let R = lasinfon_core::formulas::exponent_layer::compute_resonance_heat(
-            env.content_emotion_intensity,
-            env.audience_resonance_match,
-            env.environment_emotion_fit,
-            r_weights.w_content, r_weights.w_audience, r_weights.w_environment,
-        );
-        let mu_psych = lasinfon_core::formulas::exponent_layer::compute_psych_friction(
-            env.L_antipathy,
-            scores.source_credibility,
-            meme.audience_trust_base,
-            mu_weights.w_antipathy, mu_weights.w_suspicion,
-            trust_weights.w_source, trust_weights.w_audience,
-        );
+
+        // ── Dynamic Parameter Sourcing for High-Fidelity Time Decay ──
+        // On tick 0, calculate R and mu_psych from initial environments.
+        // On subsequent ticks (t > 0), use the dynamically evolved, decayed/catalyzed R_t and mu_psych_t!
+        let R = if field.t == initial_field.t {
+            lasinfon_core::formulas::exponent_layer::compute_resonance_heat(
+                env.content_emotion_intensity,
+                env.audience_resonance_match,
+                env.environment_emotion_fit,
+                r_weights.w_content, r_weights.w_audience, r_weights.w_environment,
+            )
+        } else {
+            field.R_t
+        };
+
+        let mu_psych = if field.t == initial_field.t {
+            lasinfon_core::formulas::exponent_layer::compute_psych_friction(
+                env.L_antipathy,
+                scores.source_credibility,
+                meme.audience_trust_base,
+                mu_weights.w_antipathy, mu_weights.w_suspicion,
+                trust_weights.w_source, trust_weights.w_audience,
+            )
+        } else {
+            field.mu_psych_t
+        };
+
         let (omega, K_niche_switched, q_triggered) = lasinfon_core::formulas::exponent_layer::detect_q_switch(
             field.T, R, meme.social_currency,
             field.challengability_score, field.circle_opposition,
@@ -141,7 +155,7 @@ pub fn run_simulation(
             trust_weights.w_source, trust_weights.w_audience,
         );
 
-        // ── Standard Reference Projection (SRP) ──
+        // ── Calculate Standard Reference Projection (SRP) ──
         let std_k = 1.0;
         let std_omega = 0.0;
         let std_epsilon = 0.0;

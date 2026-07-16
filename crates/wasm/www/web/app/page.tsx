@@ -53,7 +53,7 @@ export default function Home() {
 
   const getVal = (val: any, def = 0.0) => (val !== undefined && val !== null ? val : def);
 
-  // ── Non-LLM Mathematical Summary Generator ──
+  // ── Non-LLM Mathematical Summary Generator (v6.1.1 - High-Fidelity Metrology Explanation) ──
   const generateSummaryText = (records: any[]) => {
     if (!records || records.length === 0) return "";
     const first = records[0];
@@ -73,25 +73,35 @@ export default function Home() {
     const crossed_threshold = records.some((r) => getVal(r.lambda_eff) > 1.0);
     const threshold_tick = records.findIndex((r) => getVal(r.lambda_eff) > 1.0);
 
-    return `=== LASINFON SIMULATION SUMMARY REPORT ===
+    return `=== LASINFON METROLOGY SIMULATION SUMMARY REPORT ===
 Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
 
-[INITIAL STATE (t=0)]:
-- G_active: ${getVal(first.G).toFixed(2)} | G_std: ${getVal(first.G_std, first.G).toFixed(2)} | K_mult: ${getVal(first.K_mult, 1.0).toFixed(2)}x
-- R_t: ${getVal(first.R_t).toFixed(2)} | C_t: ${(getVal(first.C_t)*100).toFixed(1)}% | mu_psych: ${getVal(first.mu_psych_t).toFixed(2)}
+[INITIAL STATE (t=0) - COLD START SECTION]:
+- G_active (Active Simulated Exposure): ${getVal(first.G).toFixed(2)}
+- G_std (Standard Reference Potency / SRP): ${getVal(first.G_std, first.G).toFixed(2)}
+- K_mult (Environmental Multiplier / Wind Speed): ${getVal(first.K_mult, 1.0).toFixed(2)}x
+- R_t (Resonance Heat / Emotional Alignment): ${getVal(first.R_t).toFixed(2)}
+- C_t (Active Resonance Node Ratio): ${(getVal(first.C_t)*100).toFixed(1)}%
+- mu_psych (Psychological Friction / Social Resistance): ${getVal(first.mu_psych_t).toFixed(2)}
 
-[PEAK STATE (t=${peak_tick})]:
-- Peak G_active: ${peak_G.toFixed(2)} | G_std: ${getVal(records[peak_tick]?.G_std, peak_G).toFixed(2)} | K_mult: ${getVal(records[peak_tick]?.K_mult, 1.0).toFixed(2)}x
+[PEAK STATE (t=${peak_tick}) - INFLECTION POINT]:
+- Peak G_active: ${peak_G.toFixed(2)}
+- Peak G_std (Standard Potency at Peak): ${getVal(records[peak_tick]?.G_std, peak_G).toFixed(2)}
+- Peak K_mult (Wind Speed at Peak): ${getVal(records[peak_tick]?.K_mult, 1.0).toFixed(2)}x
 
-[FINAL STATE (t=${last.t})]:
-- Final G_active: ${getVal(last.G).toFixed(2)} | G_std: ${getVal(last.G_std, last.G).toFixed(2)} | K_mult: ${getVal(last.K_mult, 1.0).toFixed(2)}x
+[FINAL STATE (t=${last.t}) - STEADY STATE / EXHAUSTION]:
+- Final G_active: ${getVal(last.G).toFixed(2)}
+- Final G_std: ${getVal(last.G_std, last.G).toFixed(2)}
+- Final K_mult: ${getVal(last.K_mult, 1.0).toFixed(2)}x
+- Final R_t: ${getVal(last.R_t).toFixed(2)}
+- Final C_t: ${(getVal(last.C_t)*100).toFixed(1)}%
 
-[PROPAGATION METRICS]:
-- Cumulative Exposure (G_total): ${total_G.toFixed(2)}
-- Average Gain Multiplier (lambda_eff): ${avg_lambda_eff.toFixed(4)}
+[INTEGRATED PROPAGATION METRICS - LIFECYCLE INTEGRAL]:
+- Cumulative Exposure (G_total - Area Under Active Curve): ${total_G.toFixed(2)}
+- Average Gain Multiplier (lambda_eff - Average Growth Velocity): ${avg_lambda_eff.toFixed(4)}
 - Autonomous Growth Crossed Threshold? ${crossed_threshold ? "YES (at t=" + threshold_tick + ")" : "NO"}
-- Final Phase Quadrant: ${last.quadrant}
-==========================================`;
+- Final Propagation Quadrant (Phase State): ${last.quadrant}
+======================================================`;
   };
 
   // ── High-Fidelity SVG Path Generator (Bézier Spline) ──

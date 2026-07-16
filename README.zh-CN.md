@@ -3,7 +3,6 @@
 **社会激光动力学引擎** • 自主传播模拟系统
 
 [![开发语言](https://img.shields.io/badge/language-Rust-orange.svg)](https://www.rust-lang.org/)
-
 [![开源协议](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
 
 Lasinfon 是一款工业级、全参数化的仿真引擎，基于**社会激光动力学**原理，对社交网络中的信息传播动力学过程进行建模与预测。引擎将原始内容视为“信号光”（信息子 Infon），将目标受众视为社会谐振腔内的“增益介质”，以此模拟社会原子的状态跃迁、受激辐射与类量子相变过程。

@@ -21,6 +21,11 @@ interface AppStore {
   activeDiagnosticResult: any | null; // Stores final calibrated simulation result JSON
   diagnosticLogs: string[];
 
+  // Control Flow Parameters (Configurable, no more hardcoding!)
+  maxTicks: number;
+  sigma: f64;
+  seed: string;
+
   // Event-driven state transition actions
   startFlow: () => void;
   setPlatform: (platform: string) => void;
@@ -30,6 +35,11 @@ interface AppStore {
   prevStep: () => void;
   resetFlow: () => void;
   
+  // Setters for control flow parameters
+  setMaxTicks: (ticks: number) => void;
+  setSigma: (sigma: number) => void;
+  setSeed: (seed: string) => void;
+
   // Transition actions for the asynchronous API layer
   setDiagnosing: (logs: string[]) => void;
   setDiagnosticResult: (result: any) => void;
@@ -50,6 +60,11 @@ export const useStore = create<AppStore>((set) => ({
   isLoading: false,
   activeDiagnosticResult: null,
   diagnosticLogs: [],
+
+  // Default control flow values (v6.1.2)
+  maxTicks: 14,
+  sigma: 0.0,
+  seed: "123",
 
   // transition: idle -> collecting
   startFlow: () => set({ state: "collecting", step: 1, activeDiagnosticResult: null }),
@@ -89,6 +104,10 @@ export const useStore = create<AppStore>((set) => ({
       diagnosticLogs: [],
     }),
     
+  setMaxTicks: (maxTicks) => set({ maxTicks }),
+  setSigma: (sigma) => set({ sigma }),
+  setSeed: (seed) => set({ seed }),
+
   // transition: collecting -> diagnosing
   setDiagnosing: (logs) => set({ state: "diagnosing", isLoading: true, diagnosticLogs: logs }),
   

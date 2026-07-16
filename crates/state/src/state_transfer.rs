@@ -1,6 +1,9 @@
 use lasinfon_core::types::{FieldState, ExposureResult};
 use libm::{exp, log};
 
+/// Constant coupling coefficient for algorithmic recommendation decay
+pub const ALGO_DECAY_MULTIPLIER: f64 = 1.5;
+
 /// Parameters for state transfer equations.
 pub struct StateTransferParams {
     pub eta: f64,
@@ -78,13 +81,13 @@ pub fn apply_attention_decay(R_temp: f64, attention_decay: f64) -> f64 {
 }
 
 /// Dynamic Algorithmic Recommended Decay (SaaS Content Aging)
-/// Simulates how platform recomendation weight decays exponentially as audience attention cools down
+/// Simulates how platform recommendation weight decays exponentially as audience attention cools down
 pub fn apply_algorithmic_decay(A_algo_t: f64, attention_decay: f64) -> f64 {
     if attention_decay <= 0.0 {
         A_algo_t
     } else {
-        // Algorithm decay constant is linearly coupled with attention decay (lambda_A = delta * 1.5)
-        let decayed = A_algo_t * exp(-attention_decay * 1.5);
+        // Algorithm decay constant is linearly coupled with attention decay (lambda_A = delta * ALGO_DECAY_MULTIPLIER)
+        let decayed = A_algo_t * exp(-attention_decay * ALGO_DECAY_MULTIPLIER);
         decayed.max(1.0) // Clamp to minimum platform baseline recommendation of 1.0
     }
 }
