@@ -1,6 +1,6 @@
 # Lasinfon
 
-**Social Laser Dynamics Engine** • Autonomous Propagation Simulation System
+**Social Laser Dynamics Engine** • Autonomous Propagation & Sequential Retention Simulation System
 
 [![Language](https://img.shields.io/badge/language-Rust-orange.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
@@ -13,7 +13,13 @@ Lasinfon is an industrial-grade, fully parameterized simulation engine designed 
 
 ## Project Status
 
-`v6.1.1`  Fully implemented deterministic pipeline, multi-tick state evolution, Monte Carlo ensemble forecasting, CLI parameter overloading, standard WASM bindings (`wasm32-unknown-unknown`), and an advanced **Standard Reference Projection (SRP)** dual-track simulation. The user interface has been completely upgraded to a premium, Dribbble-inspired light-themed Next.js/React dashboard with smooth SVG vector graphs and a Ginlix-inspired onboarding wizard.
+`v6.3.0`  Fully implemented four decoupled, high-fidelity physical propagation solvers:
+1.  **StandardSolver (Track 1)**: Measures the copy's absolute inherent potential ($G_{\text{std}}$) under standard vacuum reference conditions ($K=1.0, A_{\text{algo}}=1.0$) [5].
+2.  **ActiveSolver (Track 2)**: Simulates active environment campaigns with dynamic audience attention decay and platform algorithmic recommended decay [5].
+3.  **EmergenceSolver (Track 3)**: Models high-energy public opinion phase transitions (polarization confrontation & memetic mutation) with strict $10.0x$ saturation clamping.
+4.  **CascadeSolver (Track 4)**: Evaluates sequential campaigns (serialized novels, short dramas, consecutive news events) using time-interval memory decay, aesthetic fatigue recursive baselines, and a first-impression threshold barrier.
+
+The user interface features a premium, responsive Web Dashboard compiled into headless WebAssembly (Retina-ready vector SVG lines, dynamic hover tooltips, and a parameter-source validation inspector card) paired with a Ginlix-inspired onboarding wizard.
 
 ---
 
@@ -23,13 +29,13 @@ Lasinfon is an industrial-grade, fully parameterized simulation engine designed 
 lasinfon/
   crates/
       core          # Pure computation engine (no_std, zero I/O, rate equations)
-      state         # State transfer equations and multi-tick timeline simulation
-      monte-carlo   # Ensemble forecast with Gaussian noise injection
+      state         # Solvers sub-workspace (Standard, Active, Cascade, Emergence) and state transfer
+      monte-carlo   # Ensemble forecast with SHA-256 deterministic master-seed splitting
       config        # Layered configuration loading and semantic merging
       cli           # Command-line interface (run, simulate)
       wasm          # WebAssembly bindings + high-fidelity Next.js & static dashboards
-  docs/              # User guides, AI assessment manual, and system prompts
-  presets/           # Prebuilt city, platform, and audience parameter overlays
+  docs/              # User guides, AI assessment manuals, and pluggable system prompts
+  presets/           # Prebuilt platform and audience parameter overlays
   config/            # Default configuration JSON files
   examples/          # Example input JSON files
 ```
@@ -59,7 +65,7 @@ cargo build --release -p lasinfon-cli
 ```
 
 ### 3. Run a Deterministic Forecast
-Execute a single-step simulation. In `v6.1.1`, the output includes both the active outcome `G` and the **Standard Potential (`G_std`)** via Standard Reference Projection (SRP) along with the **Environmental Multiplier (`K_mult`)**:
+Execute a single-step simulation. In `v6.3.0`, the output includes the active outcome `G`, the **Standard Potential (`G_std`)** via Standard Reference Projection (SRP), and the **Environmental Multiplier (`K_mult`)**:
 
 ```bash
 ./target/release/lasinfon run \
@@ -68,29 +74,14 @@ Execute a single-step simulation. In `v6.1.1`, the output includes both the acti
 ```
 
 ### 4. Run a Multi-Tick Lifecycle Simulation
-Run a multi-step propagation path. Adds system-level Gaussian noise ($\sigma$) to evaluate phase transitions over time:
+Run a multi-step propagation path. Adds system-level Gaussian noise ($\sigma$) to evaluate phase transitions over time with SHA-256 audit-reproducible random seeds:
 
 ```bash
 ./target/release/lasinfon simulate \
   --config config/default.json \
   --input example_input.json \
-  --max-ticks 15 \
+  --max-ticks 20 \
   --sigma 0.05 \
-  --seed 42
-```
-
-### 5. Multi-Layer Preset Overloading (Zero-Code Presets)
-Preset files contain only the parameters that differ from the defaults. They are merged sequentially from left-to-right (right overrides left) before type-safety deserialization:
-
-```bash
-./target/release/lasinfon simulate \
-  --config config/default.json \
-  --config presets/cities/second_tier_city.json \
-  --config presets/platforms/short_video.json \
-  --config presets/audiences/gen_z.json \
-  --input example_input.json \
-  --max-ticks 10 \
-  --sigma 0.1 \
   --seed 123
 ```
 
@@ -105,14 +96,14 @@ cp input_template.json my_content.json
 # Edit my_content.json following docs/ai_assessment_guide.md
 ```
 
-###  AI-Automated Parameter Estimation (BARS 5-Point System)
-You can leverage advanced Large Language Models (e.g., Claude, GPT) as **"parameter compilers"** by feeding them the specialized system prompt located in `docs/ai_evaluator_prompt.md`. The AI will parse your raw content (text, scripts, or URLs) and output a standardized, calibrated `input_template.json` ready for simulation.
+### AI-Automated Parameter Estimation (BARS 5-Point System)
+You can leverage advanced Large Language Models (e.g., Claude, GPT, DeepSeek) as **"parameter compilers"** by feeding them the specialized system prompt located in `docs/ai_evaluator_prompt.md`. The AI will parse your raw content (text, scripts, or URLs) and output a standardized `input_template.json` ready for simulation.
 
 ---
 
 ## Premium Web Dashboard & Local Web Server
 
-Lasinfon v6.1.1 features a premium, responsive Web Dashboard compiled into headless WebAssembly with zero standard runtime or OS dependencies.
+Lasinfon v6.3.0 features a premium, responsive Web Dashboard compiled into headless WebAssembly with zero standard runtime or OS dependencies.
 
 ### 1. Compile WASM Targets
 ```bash
@@ -124,10 +115,10 @@ cp -R pkg/* www/web/public/pkg/
 ```
 
 ### 2. Run Personal Local Tester (Static HTML)
-Use our adaptive Python server script which resolves macOS WebAssembly MIME type mapping issues:
+Use our adaptive Python server script which resolves macOS WebAssembly MIME type mapping and serves the directory directly:
 ```bash
 python3 crates/wasm/server.py
-# Navigate to: http://localhost:8000/www/index.html in your browser
+# Navigate to: http://localhost:8000 in your browser (no sub-folders needed)
 ```
 
 ### 3. Run SaaS Web Cockpit (Next.js & Tailwind CSS v4)
@@ -144,8 +135,9 @@ npm run dev
 
 *   [`docs/ai_assessment_guide.md`](docs/ai_assessment_guide.md)  BARS 5-point metrology and scoring anchors for content, audience, and environment.
 *   [`docs/ai_evaluator_prompt.md`](docs/ai_evaluator_prompt.md)  Calibrated complete System Prompt for Agentic automatic parameter estimation.
+*   [`docs/ai_serial_coherence_prompt.md`](docs/ai_serial_coherence_prompt.md)  Serial Coherence prompt for cascading multi-episode campaigns.
 *   [`docs/ai_result_interpreter_prompt.md`](docs/ai_result_interpreter_prompt.md)  AI Diagnostic Interpreter Prompt for Web Chat.
-*   [`docs/ROADMAP.md`](docs/ROADMAP.md)  The official Lasinfon v6.1.1 Upgrade Plan Whitepaper and roadmap.
+*   [`docs/ROADMAP.md`](docs/ROADMAP.md)  The official Lasinfon v6.3.0 Upgrade Plan Whitepaper and roadmap.
 
 ---
 
@@ -159,4 +151,4 @@ Contributions must compile warning-free with `cargo check --workspace` and pass 
 
 ---
 
-**Lasinfon v6.1.1**  *Predict the propagation, not the message.*
+**Lasinfon v6.3.0**  *Predict the propagation, not the message.*
