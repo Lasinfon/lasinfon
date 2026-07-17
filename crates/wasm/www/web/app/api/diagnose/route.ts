@@ -154,6 +154,10 @@ export async function POST(request: Request) {
           audience_resonance_match: 5.0,
           environment_emotion_fit: 5.0,
         },
+        confidence: {
+          content_access: true,
+          reliability: "high"
+        },
         engine: "Dev Sandbox (Mock)"
       };
 
@@ -210,6 +214,20 @@ export async function POST(request: Request) {
 
     const payload = await response.json();
     const evaluatedJson = JSON.parse(payload.choices[0].message.content);
+
+    // ── Epistemological Confidence Guardrail (Hard Melt on Silent Failure) ──
+    // Stops the pipeline immediately with a 400 Bad Request if the LLM cannot access the target URL,
+    // protecting the simulation engine from hallucinated noise.
+    const contentAccess = evaluatedJson.confidence?.content_access;
+    if (contentAccess === false) {
+      return NextResponse.json(
+        {
+          error: "AI Evaluation Pollution Blocked",
+          message: "The AI agent failed to fetch or read the live web content. To protect the metrological purity of the simulator, please copy and paste the raw text directly instead of providing a URL.",
+        },
+        { status: 400 }
+      );
+    }
     
     // Map the LLM 1-5 integers to 0-10 floats on the API layer with robust getVal fallback
     const scoresMapped = {
