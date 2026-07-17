@@ -148,6 +148,7 @@ export async function POST(request: Request) {
           terrain_passability: 7.5,
           raw_suppression: 3.0,
           L_cognitive: mapAndClampScore(L_cognitive_score),
+          L_operational: 1.0, // Restored: Required physical field in EnvInputs
           L_antipathy: mapAndClampScore(L_antipathy_score),
           content_emotion_intensity: mapAndClampScore(emotion_score),
           audience_resonance_match: 5.0,
@@ -259,6 +260,7 @@ export async function POST(request: Request) {
         terrain_passability: 5.0,
         raw_suppression: 3.0,
         L_cognitive: l_cognitive_mapped,
+        L_operational: 1.0, // Restored: Required physical field in EnvInputs
         L_antipathy: l_antipathy_mapped,
         content_emotion_intensity: scoresMapped.content_emotion_arousal,
         audience_resonance_match: 5.0,
