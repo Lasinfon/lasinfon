@@ -3,13 +3,36 @@ import { DiagnoseInputSchema } from "@/config/schema";
 import fs from "fs";
 import path from "path";
 
-// High-fidelity environment and audience estimator mapping to docs/ai_env_estimator_prompt.md
-function estimateEnv(platform: string, purpose: string, content: string) {
+/**
+ * Type-safe value retrieval helper with fallback guardrails (v6.3.0).
+ * Prevents downstream TypeError or ReferenceError during parse loops.
+ */
+const getVal = (val: unknown, fallback: number): number => {
+  if (typeof val === 'number' && !Number.isNaN(val)) return val;
+  return fallback;
+};
+
+/**
+ * Maps the 1-5 integer BARS score into the Rust engine's [0.0, 10.0] physical domain.
+ * Applies strict double clamping guardrails to prevent downstream simulation panic.
+ */
+function mapAndClampScore(score5: number): number {
+  const raw = (score5 - 1.0) * 2.5;
+  return Math.max(0.0, Math.min(10.0, raw));
+}
+
+/**
+ * High-fidelity environment and audience estimator mapping (docs/ai_env_estimator_prompt.md).
+ * Dynamically converts platform and strategic purpose into environmental K_env & Meme attributes.
+ *
+ * NOTE (Decoupling Specification):
+ * Strictly excludes content-dependent factors like L_cognitive or L_antipathy to maintain
+ * a single authoritative source from LLM content evaluation.
+ */
+function estimateEnv(platform: string, purpose: string) {
   const isStandard = platform.toLowerCase() === "standard";
-  const len = content.length;
-  const isEmotional = content.includes("!") || content.includes("?") || content.includes("前女友") || content.includes("付出了");
   
-  // Platform density mapping (Population transmission coefficient / medium density base)
+  // Platform density mapping unifies under social laser medium density
   const densityMap: Record<string, number> = {
     standard: 5.0,
     douyin: 9.0,
@@ -25,18 +48,8 @@ function estimateEnv(platform: string, purpose: string, content: string) {
       share_circle_preference: isStandard ? 5.0 : (platform.toLowerCase() === "wechat" ? 9.0 : 4.0),
     },
     env: {
-      surge_match: isEmotional ? 7.5 : 5.0,
-      current_direction: 5.0,
-      terrain_passability: isStandard ? 5.0 : 7.5,
       population_density: densityMap[platform.toLowerCase()] || 5.0,
       connectivity: platform.toLowerCase() === "wechat" ? 8.5 : (platform.toLowerCase() === "standard" ? 5.0 : 4.0),
-      raw_suppression: isStandard ? 3.0 : 2.0,
-      L_cognitive: len > 500 ? 7.5 : 2.5,
-      L_operational: 1.0,
-      L_antipathy: content.includes("争议") ? 7.5 : 2.5,
-      content_emotion_intensity: isEmotional ? 7.5 : 5.0,
-      audience_resonance_match: 5.0,
-      environment_emotion_fit: 5.0,
     },
   };
 }
@@ -74,56 +87,72 @@ export async function POST(request: Request) {
     const apiKey = process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
-      // ── High-Fidelity Mock Engine (Dev Sandbox) ──
+      // ── High-Fidelity Mock Engine (Dev Sandbox v6.3.0) ──
+      // Note: Chinese keyword matching below represents temporary dev heuristics for sandboxing,
+      // and will be entirely replaced by active LLM evaluations in production.
       const len = content.length;
       const is_emotional = content.includes("!") || content.includes("?") || content.includes("哈") || content.includes("前女友") || content.includes("付出了");
       const is_uniqueness = content.includes("识人") || content.includes("独自") || content.includes("想整容");
       const is_innovation = content.includes("颠覆") || content.includes("全新") || content.includes("不纠缠");
       
-      const emotion_score = is_emotional ? 7.5 : 2.5;
-      const unique_score = is_uniqueness ? 10.0 : 2.5;
-      const innovation_score = is_innovation ? 7.5 : 5.0;
-      const practical_score = len < 100 ? 7.5 : 2.5; // Short axiom has higher immediate practical utility
-      const completeness_score = len > 1000 ? 10.0 : 2.5; // Long story has higher narrative completeness
-      const personification_score = len > 1000 ? 10.0 : 5.0; // Long story has higher personification
+      const emotion_score = is_emotional ? 4 : 2; // BARS 1-5 integer scale
+      const unique_score = is_uniqueness ? 5 : 2;
+      const innovation_score = is_innovation ? 4 : 2;
+      const practical_score = len < 100 ? 4 : 2; // Short axiom has higher immediate practical utility
+      const completeness_score = len > 1000 ? 5 : 2; // Long story has higher narrative completeness
+      const personification_score = len > 1000 ? 5 : 3;
+
+      const L_cognitive_score = len > 500 ? 4 : 2; // BARS 1-5
+      const L_antipathy_score = content.includes("争议") ? 4 : 1;
 
       // Call dynamic environment estimator to compute Meme & Env factors (Zero hardcoding!)
-      const envMeme = estimateEnv(platform, purpose, content);
+      const envMeme = estimateEnv(platform, purpose);
 
       const mockResult = {
         scores: {
-          content_emotion_arousal: emotion_score,
-          social_currency_attr: is_emotional ? 7.5 : 5.0,
-          practical_value: practical_score,
-          uniqueness: unique_score,
-          innovation: innovation_score,
-          enhancement: len > 1000 ? 7.5 : 2.5,
-          strangeness: is_uniqueness ? 7.5 : 2.5,
-          narrative_completeness: completeness_score,
-          remix_openness: len < 100 ? 7.5 : 2.5, // Short axiom has higher remix openness
-          source_credibility: len > 1000 ? 7.5 : 2.5,
-          personification: personification_score,
+          content_emotion_arousal: mapAndClampScore(emotion_score),
+          social_currency_attr: mapAndClampScore(is_emotional ? 4 : 3),
+          practical_value: mapAndClampScore(practical_score),
+          uniqueness: mapAndClampScore(unique_score),
+          innovation: mapAndClampScore(innovation_score),
+          enhancement: mapAndClampScore(len > 1000 ? 4 : 2),
+          strangeness: mapAndClampScore(is_uniqueness ? 4 : 2),
+          narrative_completeness: mapAndClampScore(completeness_score),
+          remix_openness: mapAndClampScore(len < 100 ? 4 : 2),
+          source_credibility: mapAndClampScore(len > 1000 ? 4 : 2),
+          personification: mapAndClampScore(personification_score),
         },
         meme: envMeme.meme,
         field: {
           t: 0,
           C_t: 0.0,
-          R_t: emotion_score,
-          R_0: emotion_score,
+          R_t: mapAndClampScore(emotion_score),
+          R_0: mapAndClampScore(emotion_score),
           mu_psych_t: 3.0,
           K_pot_t: 1.0,
           K_pot_0: 1.0,
           K_soil: 1.0,
           K_comp: 1.0,
           K_base: 1.0,
-          A_algo: platform.toLowerCase() === "standard" ? 1.0 : 80.0, // Dynamic A_algo based on chosen platform!
+          A_algo: platform.toLowerCase() === "standard" ? 1.0 : 80.0, // Dynamic A_algo based on chosen platform
           T: 2.0,
           T_effective: 2.0,
           challengability_score: 5.0,
           circle_opposition: 8.0,
           social_currency_t: 5.0,
         },
-        env: envMeme.env,
+        env: {
+          ...envMeme.env,
+          surge_match: 7.5,
+          current_direction: 5.0,
+          terrain_passability: 7.5,
+          raw_suppression: 3.0,
+          L_cognitive: mapAndClampScore(L_cognitive_score),
+          L_antipathy: mapAndClampScore(L_antipathy_score),
+          content_emotion_intensity: mapAndClampScore(emotion_score),
+          audience_resonance_match: 5.0,
+          environment_emotion_fit: 5.0,
+        },
         engine: "Dev Sandbox (Mock)"
       };
 
@@ -138,7 +167,7 @@ export async function POST(request: Request) {
       : "https://api.openai.com/v1/chat/completions";
     const model = isDeepSeek ? "deepseek-chat" : "gpt-4o-mini";
 
-    // Dynamic Multi-Path File Read: Ensures absolute loading safety across different deployment environments
+    // Dynamic Multi-Path File Read: Ensures absolute loading safety
     let systemPrompt = "";
     const pathsToTry = [
       path.join(process.cwd(), "../../../docs/ai_evaluator_prompt.md"),
@@ -181,10 +210,64 @@ export async function POST(request: Request) {
     const payload = await response.json();
     const evaluatedJson = JSON.parse(payload.choices[0].message.content);
     
-    // Inject active flag
-    evaluatedJson.engine = "Production SaaS (LLM)";
+    // Map the LLM 1-5 integers to 0-10 floats on the API layer with robust getVal fallback
+    const scoresMapped = {
+      content_emotion_arousal: mapAndClampScore(getVal(evaluatedJson.content_emotion_arousal, 3.0)),
+      social_currency_attr: mapAndClampScore(getVal(evaluatedJson.social_currency_attr, 3.0)),
+      practical_value: mapAndClampScore(getVal(evaluatedJson.practical_value, 3.0)),
+      uniqueness: mapAndClampScore(getVal(evaluatedJson.uniqueness, 3.0)),
+      innovation: mapAndClampScore(getVal(evaluatedJson.innovation, 3.0)),
+      enhancement: mapAndClampScore(getVal(evaluatedJson.enhancement, 3.0)),
+      strangeness: mapAndClampScore(getVal(evaluatedJson.strangeness, 3.0)),
+      narrative_completeness: mapAndClampScore(getVal(evaluatedJson.narrative_completeness, 3.0)),
+      remix_openness: mapAndClampScore(getVal(evaluatedJson.remix_openness, 3.0)),
+      source_credibility: mapAndClampScore(getVal(evaluatedJson.source_credibility, 3.0)),
+      personification: mapAndClampScore(getVal(evaluatedJson.personification, 3.0)),
+    };
 
-    return NextResponse.json(evaluatedJson);
+    const l_cognitive_mapped = mapAndClampScore(getVal(evaluatedJson.L_cognitive, 3.0));
+    const l_antipathy_mapped = mapAndClampScore(getVal(evaluatedJson.L_antipathy, 3.0));
+
+    // Call dynamic environment estimator to compute Meme & Env factors
+    const envMeme = estimateEnv(platform, purpose);
+
+    const activeResult = {
+      scores: scoresMapped,
+      meme: envMeme.meme,
+      field: {
+        t: 0,
+        C_t: 0.0,
+        R_t: scoresMapped.content_emotion_arousal,
+        R_0: scoresMapped.content_emotion_arousal,
+        mu_psych_t: 3.0,
+        K_pot_t: 1.0,
+        K_pot_0: 1.0,
+        K_soil: 1.0,
+        K_comp: 1.0,
+        K_base: 1.0,
+        A_algo: platform.toLowerCase() === "standard" ? 1.0 : 80.0,
+        T: 2.0,
+        T_effective: 2.0,
+        challengability_score: 5.0,
+        circle_opposition: 8.0,
+        social_currency_t: 5.0,
+      },
+      env: {
+        ...envMeme.env,
+        surge_match: 5.0, // Default fallback state
+        current_direction: 5.0,
+        terrain_passability: 5.0,
+        raw_suppression: 3.0,
+        L_cognitive: l_cognitive_mapped,
+        L_antipathy: l_antipathy_mapped,
+        content_emotion_intensity: scoresMapped.content_emotion_arousal,
+        audience_resonance_match: 5.0,
+        environment_emotion_fit: 5.0,
+      },
+      engine: "Production SaaS (LLM)"
+    };
+
+    return NextResponse.json(activeResult);
 
   } catch (err: any) {
     return NextResponse.json(
