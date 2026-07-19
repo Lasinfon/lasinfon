@@ -23,7 +23,7 @@ interface AppStore {
 
   // Control Flow Parameters (Configurable, no more hardcoding!)
   maxTicks: number;
-  sigma: f64;
+  sigma: number;
   seed: string;
 
   // Event-driven state transition actions
@@ -61,10 +61,10 @@ export const useStore = create<AppStore>((set) => ({
   activeDiagnosticResult: null,
   diagnosticLogs: [],
 
-  // Default control flow values (v6.1.2)
-  maxTicks: 14,
-  sigma: 0.0,
-  seed: "123",
+  // Default control flow values (v6.3.0 - unified with 8000 port)
+  maxTicks: 100,
+  sigma: 0.05,
+  seed: "10",
 
   // transition: idle -> collecting
   startFlow: () => set({ state: "collecting", step: 1, activeDiagnosticResult: null }),
