@@ -61,10 +61,10 @@ export const useStore = create<AppStore>((set) => ({
   activeDiagnosticResult: null,
   diagnosticLogs: [],
 
-  // Default control flow values (v6.3.0 - unified with 8000 port)
+  // Default control flow values (v6.3.0 - fully aligned with Ground State "1")
   maxTicks: 100,
   sigma: 0.05,
-  seed: "10",
+  seed: "1", // Master seed defaults to "1" representing first pristine trial
 
   // transition: idle -> collecting
   startFlow: () => set({ state: "collecting", step: 1, activeDiagnosticResult: null }),

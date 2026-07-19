@@ -1,9 +1,9 @@
 {
   "standard": {
     "name": "C. Standard Metrology Reference (标准计量参考 ── 标准平台/标准圈层/标准环境)",
-    "max_ticks": 14,
-    "sigma": 0.0,
-    "seed": 123,
+    "max_ticks": 100,
+    "sigma": 0.05,
+    "seed": 1,
     "config": {
       "system": { "alpha": 0.2 },
       "stochastic": { "eta": 0.3, "theta": 0.01, "gamma_saturation": 0.5 },
@@ -36,10 +36,10 @@
     }
   },
   "douyin": {
-    "name": "A. Gen Z + Douyin Short-video Platform (15 Ticks)",
-    "max_ticks": 15,
+    "name": "A. Gen Z + Douyin Short-video Platform (100 Ticks)",
+    "max_ticks": 100,
     "sigma": 0.05,
-    "seed": 123,
+    "seed": 1,
     "config": {
       "system": { "alpha": 0.2 },
       "stochastic": { "eta": 0.3, "theta": 0.01, "gamma_saturation": 0.5 },
@@ -72,10 +72,10 @@
     }
   },
   "xiaohongshu": {
-    "name": "B. Xiaohongshu Visual Seeding (15 ticks)",
-    "max_ticks": 15,
+    "name": "B. Xiaohongshu Visual Seeding (100 Ticks)",
+    "max_ticks": 100,
     "sigma": 0.05,
-    "seed": 123,
+    "seed": 1,
     "config": {
       "system": { "alpha": 0.2 },
       "stochastic": { "eta": 0.3, "theta": 0.01, "gamma_saturation": 0.5 },
@@ -108,10 +108,10 @@
     }
   },
   "wechat": {
-    "name": "D. WeChat Private Circle (15 Ticks)",
-    "max_ticks": 15,
+    "name": "D. WeChat Private Circle (100 Ticks)",
+    "max_ticks": 100,
     "sigma": 0.05,
-    "seed": 123,
+    "seed": 1,
     "config": {
       "system": { "alpha": 0.2 },
       "stochastic": { "eta": 0.2, "theta": 0.01, "gamma_saturation": 0.5 },
@@ -130,7 +130,7 @@
         "W": { "w_enhance": 0.4, "w_trust": 0.3, "w_unique": 0.2, "w_R": 0.1 }
       },
       "mapping": {
-        "K_pot": { "base": 0.8, "slope": 0.7, "w_surge": 0.4, "w_current": 0.4, "w_terrain": 0.2 },
+        "K_pot": { "base": 0.8, "slope": 0.7, "w_surge: ": 0.4, "w_current": 0.4, "w_terrain": 0.2 },
         "K_soil": { "base": 0.3, "slope": 1.2, "w_density": 0.6, "w_connect": 0.4 },
         "K_comp": { "base": 1.0, "slope": 0.7 },
         "omega": { "scale": 2.5, "denom": 1000 }
