@@ -1,853 +1,537 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lasinfon (v6.1.1) - Public Opinion Weather Radar</title>
-    
-    <!-- ── 🚨 Absolute Native Alert Telemetry Sensor (Guaranteed to Run and Pop up) ── -->
-    <script>
-        window.onerror = function(message, source, lineno, colno, error) {
-            var msg = "🚨 [JS Compile/Runtime Error]\n\n" + 
-                      "Message: " + message + "\n" +
-                      "Line: " + lineno + ", Col: " + colno + "\n" +
-                      "Source: " + source + "\n\n" +
-                      "Stack:\n" + (error ? error.stack : 'N/A');
-            alert(msg);
-            return false;
-        };
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lasinfon · Social Laser Metrology</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: #f6f8fa;
+      color: #1e1e2f;
+      padding: 2rem 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+    .container { max-width: 1400px; width: 100%; }
+    h1 {
+      font-weight: 350;
+      font-size: 2rem;
+      letter-spacing: -0.02em;
+      border-bottom: 1px solid #d0d7de;
+      padding-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    h1 small {
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: #57606a;
+      background: #eaeef2;
+      padding: 0.15rem 0.75rem;
+      border-radius: 20px;
+      margin-left: 0.5rem;
+    }
+    .sub {
+      color: #57606a;
+      margin-top: -0.2rem;
+      margin-bottom: 1.8rem;
+      font-size: 0.95rem;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 780px) { .grid-2 { grid-template-columns: 1fr; } }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+      padding: 1.25rem 1.5rem;
+      border: 1px solid #e9ecf0;
+    }
+    .card h3 {
+      font-weight: 500;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: #57606a;
+      margin-bottom: 0.6rem;
+    }
+    textarea {
+      width: 100%;
+      font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      padding: 0.6rem;
+      border: 1px solid #d0d7de;
+      border-radius: 8px;
+      background: #fafbfc;
+      resize: vertical;
+      color: #1e1e2f;
+      tab-size: 2;
+    }
+    textarea:focus { outline: 2px solid #0969da; outline-offset: 1px; border-color: transparent; }
+    .param-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 1.8rem;
+      align-items: center;
+      margin: 0.25rem 0 0.75rem 0;
+    }
+    .param-row label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      font-weight: 450;
+      color: #24292f;
+    }
+    .param-row input[type="number"] {
+      width: 72px;
+      padding: 0.25rem 0.4rem;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      background: #fafbfc;
+    }
+    .param-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #0969da;
+    }
+    .btn {
+      background: #1f2328;
+      color: white;
+      border: none;
+      padding: 0.6rem 2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 0.2rem;
+    }
+    .btn:hover { background: #2d333b; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        window.addEventListener('unhandledrejection', function(event) {
-            var msg = "🚨 [Unhandled Promise Rejection]\n\n" + 
-                      "Reason: " + event.reason + "\n\n" +
-                      "Common Causes:\n" +
-                      "1. Modern browsers block WASM via file:// due to CORS. You must run a local server.\n" +
-                      "2. Python server might be sending incorrect MIME type for .wasm. Please use server.py.\n" +
-                      "3. Cache issue. Press Cmd+Shift+R to force reload.";
-            alert(msg);
-        });
-    </script>
-
-    <style>
-        /* Modern Light-Themed SaaS Styles (Dribbble Inspired) */
-        :root {
-            --bg-main: #f8fafc;
-            --bg-card: #ffffff;
-            --border-color: #e2e8f0;
-            --text-main: #0f172a;
-            --text-muted: #475569;
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --accent-purple: #7c3aed;
-            --accent-pink: #db2777;
-            --accent-blue: #3b82f6;
-            --danger: #ef4444;
-        }
-
-        body { 
-            background: var(--bg-main); 
-            color: var(--text-main); 
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
-            padding: 30px;
-            margin: 0;
-            line-height: 1.5;
-        }
-        
-        h2 {
-            font-weight: 700;
-            color: var(--text-main);
-            margin: 0 0 25px 0;
-            font-size: 24px;
-            letter-spacing: -0.025em;
-        }
-
-        .container { 
-            display: flex; 
-            gap: 25px; 
-            max-width: 1300px; 
-            margin: 0 auto; 
-        }
-
-        .control-panel { 
-            width: 360px; 
-            background: var(--bg-card); 
-            padding: 24px; 
-            border-radius: 12px; 
-            border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-            box-sizing: border-box;
-            height: fit-content;
-        }
-
-        .display-panel { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 25px; 
-        }
-
-        .card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            padding: 20px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-        }
-
-        .card-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .canvas-container { 
-            display: flex; 
-            gap: 25px; 
-            flex-wrap: wrap; 
-        }
-
-        canvas { 
-            background: #ffffff; 
-            border: 1px solid var(--border-color); 
-            border-radius: 8px; 
-        }
-
-        .btn { 
-            background: var(--primary); 
-            border: none; 
-            color: white; 
-            padding: 12px; 
-            width: 100%; 
-            cursor: pointer; 
-            border-radius: 8px; 
-            font-weight: 600; 
-            font-size: 14px;
-            transition: background 0.15s ease;
-        }
-        .btn:hover { background: var(--primary-hover); }
-        
-        .btn-sm { 
-            background: #f1f5f9; 
-            border: 1px solid var(--border-color); 
-            color: var(--text-muted); 
-            padding: 8px 12px; 
-            cursor: pointer; 
-            font-size: 12px; 
-            border-radius: 6px; 
-            font-weight: 500;
-        }
-        .btn-sm:hover:not(:disabled) { 
-            background: #e2e8f0; 
-            color: var(--text-main); 
-        }
-        .btn-sm:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        label { 
-            display: block; 
-            margin-top: 12px; 
-            font-size: 12px; 
-            font-weight: 600;
-            color: var(--text-muted); 
-            margin-bottom: 4px;
-        }
-
-        select, input, textarea { 
-            width: 100%; 
-            background: #ffffff; 
-            border: 1px solid var(--border-color); 
-            color: var(--text-main); 
-            padding: 8px 12px; 
-            border-radius: 6px;
-            box-sizing: border-box; 
-            font-family: inherit; 
-            font-size: 13px;
-        }
-        select:focus, input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        textarea { height: 120px; resize: vertical; font-size: 12px; }
-        
-        pre { 
-            background: #1e293b; 
-            color: #f8fafc;
-            padding: 15px; 
-            border-radius: 8px; 
-            font-size: 11px; 
-            font-family: monospace;
-            overflow-x: auto; 
-            max-height: 200px; 
-            margin: 0;
-        }
-
-        .interpretation-box { 
-            background: var(--bg-card); 
-            padding: 20px; 
-            border-radius: 12px; 
-            font-size: 14px; 
-            line-height: 1.6; 
-            border-left: 4px solid var(--primary); 
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-            border-top: 1px solid var(--border-color);
-            border-right: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-        }
-        .interpretation-box h4 { margin: 0 0 8px 0; color: var(--primary); font-size: 16px; font-weight: 700; }
-        
-        /* Two-Box Display Section */
-        .report-section { display: flex; gap: 25px; margin-top: 5px; }
-        .report-box { 
-            flex: 1; 
-            background: var(--bg-card); 
-            padding: 20px; 
-            border-radius: 12px; 
-            border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-        }
-        .report-box h4 { margin: 0 0 10px 0; color: var(--text-main); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-        .report-box pre, .report-box textarea { 
-            width: 100%; 
-            height: 220px; 
-            background: #f8fafc; 
-            border: 1px solid var(--border-color); 
-            border-radius: 6px; 
-            color: var(--text-main); 
-            font-family: monospace; 
-            font-size: 11px; 
-            padding: 12px; 
-            box-sizing: border-box; 
-        }
-        .report-box textarea { resize: none; }
-        .report-btn { 
-            background: var(--primary); 
-            border: none; 
-            color: white; 
-            padding: 10px 14px; 
-            cursor: pointer; 
-            font-size: 13px; 
-            font-weight: 600; 
-            border-radius: 6px; 
-            margin-top: 10px; 
-            width: 100%; 
-            transition: background 0.15s ease;
-        }
-        .report-btn:hover { background: var(--primary-hover); }
-
-        .legend { display: flex; gap: 15px; margin-bottom: 5px; }
-        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; color: var(--text-muted); }
-        .legend-color { width: 10px; height: 10px; border-radius: 50%; }
-        
-        .diagnostic-card { background: var(--bg-main); padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 13px; border: 1px solid var(--border-color); }
-        .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        .badge-red { background: #fee2e2; color: #991b1b; }
-        .badge-yellow { background: #fef9c3; color: #854d0e; }
-        .badge-green { background: #dcfce7; color: #166534; }
-        
-        .collapsible { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-top: 12px; }
-        .collapsible summary { cursor: pointer; color: var(--text-muted); font-size: 12px; font-weight: 600; }
-    </style>
+    .result-wrap {
+      margin-top: 1.8rem;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #e9ecf0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      overflow: hidden;
+    }
+    .result-tabs {
+      display: flex;
+      border-bottom: 1px solid #e9ecf0;
+      background: #f6f8fa;
+    }
+    .result-tabs button {
+      background: transparent;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #57606a;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.1s;
+    }
+    .result-tabs button.active {
+      color: #1f2328;
+      border-bottom-color: #1f2328;
+      background: white;
+    }
+    .result-tabs button:hover { background: #eaeef2; }
+    .result-pane {
+      padding: 1.5rem;
+      max-height: 650px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #fafbfc;
+    }
+    .result-pane pre { margin: 0; }
+    .badge-status {
+      display: inline-block;
+      background: #ddf4ff;
+      color: #0550ae;
+      padding: 0.05rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      margin-left: 0.5rem;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.5rem 1rem;
+      background: #f6f8fa;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      margin: 0.4rem 0 0.6rem 0;
+    }
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      border-bottom: 1px dashed #d0d7de;
+      padding: 0.15rem 0;
+    }
+    .stat-item .label { color: #57606a; }
+    .stat-item .value { font-weight: 500; color: #1f2328; }
+    .section-title {
+      font-weight: 600;
+      color: #1f2328;
+      margin-top: 0.8rem;
+      margin-bottom: 0.2rem;
+      font-size: 0.85rem;
+      letter-spacing: -0.01em;
+    }
+    .inline-code { background: #eaeef2; padding: 0.05rem 0.4rem; border-radius: 4px; font-size: 0.75rem; }
+    .footnote { color: #57606a; font-size: 0.7rem; margin-top: 0.8rem; border-top: 1px solid #d0d7de; padding-top: 0.6rem; }
+    .flex-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  </style>
 </head>
 <body>
-
-<h2>LASINFON - Autonomous Self-Growing Propagation Dashboard (v6.1.1)</h2>
-
 <div class="container">
-    <div class="control-panel">
-        <label>Scenario Preset:</label>
-        <select id="preset-selector">
-            <option value="video">A. Gen Z + Short-video Platform</option>
-            <option value="professional">B. Professional Network + Knowledge Parents</option>
-            <option value="custom">CUSTOM – Paste your own JSON</option>
-        </select>
 
-        <details class="collapsible" id="custom-panel" style="display:none;">
-            <summary>📋 Custom Input (config + scenario)</summary>
-            <label>Paste complete JSON (config + scenario):</label>
-            <textarea id="custom-json" placeholder='{"config": {...}, "scenario": {...}}'></textarea>
-            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">
-                Must contain <code>"config"</code> and <code>"scenario"</code> objects.
-            </div>
-        </details>
+  <h1>
+    ⚡ Lasinfon
+    <small>v6.3.0 · metrology engine</small>
+  </h1>
+  <div class="sub">Deterministic propagation simulator · no LLM, pure physics</div>
 
-        <details class="collapsible" id="visualize-panel">
-            <summary>📊 Visualize Existing Results</summary>
-            <label>Paste simulation output (array of records):</label>
-            <textarea id="visualize-json" placeholder='[{"t":0, "G":..., ...}, ...]'></textarea>
-            <button class="btn" id="visualize-btn" style="margin-top:5px;">Render Charts from Pasted Data</button>
-            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">
-                Accepts a JSON array of records, or an object with a <code>"records"</code> key.
-            </div>
-        </details>
-
-        <!-- ── Paste Web Chat AI Diagnosis Panel (v6.1.1) ── -->
-        <details class="collapsible" id="ai-response-panel">
-            <summary>📥 Paste Web Chat AI Diagnosis (回贴 AI 诊断)</summary>
-            <label>Paste the Markdown diagnostic report from ChatGPT/Claude here:</label>
-            <textarea id="ai-response-text" style="height:120px;" placeholder="Paste the Markdown output from your AI Web Chat here..."></textarea>
-            <button class="btn" id="render-ai-btn" style="margin-top:5px; background:var(--accent-purple);">Render AI Report in Scan Box</button>
-        </details>
-
-        <label>Max ticks (for new simulation):</label>
-        <input type="number" id="ticks" value="15">
-
-        <label>Noise sigma:</label>
-        <input type="number" id="sigma" value="0.05" step="0.01">
-
-        <label>Seed:</label>
-        <input type="number" id="seed" value="123">
-
-        <button class="btn" id="run-btn" style="margin-top:20px;">Run Simulation</button>
-        <button class="btn-sm" id="anim-btn" disabled style="margin-top:5px;">▶ Play Evolution Animation</button>
+  <div class="grid-2">
+    <div class="card">
+      <h3>📐 Config</h3>
+      <textarea id="configInput" rows="7" spellcheck="false">{
+  "system": { "alpha": 0.2 },
+  "stochastic": { "sigma": 0.15, "gamma_saturation": 0.5 },
+  "state_transfer": {
+    "social_proof": 0.3,
+    "autocatalysis": 0.2,
+    "social_pressure": 0.1
+  },
+  "weights": {
+    "seed_weight": 0.15,
+    "S_weight": 0.20,
+    "R_weight": 0.35,
+    "psych_weight": 0.30
+  },
+  "mapping": {
+    "K_pot": { "a": 0.8, "b": 1.2 },
+    "K_soil": { "a": 0.5, "b": 1.5 },
+    "K_comp": { "a": 0.6, "b": 1.4 }
+  }
+}</textarea>
     </div>
-
-    <div class="display-panel">
-        <div class="canvas-container">
-            <div class="card">
-                <div class="card-title">Atomic Polarization Grid (C_t)</div>
-                <canvas id="grid-canvas" width="240" height="240"></canvas>
-            </div>
-            <div class="card" style="flex:1; min-width:300px;">
-                <div class="card-title">Dual-Track Exposure (G)</div>
-                <div class="legend" style="margin-bottom: 8px;">
-                    <div class="legend-item"><div class="legend-color" style="background:var(--accent-blue);"></div> G_std (Standard Potential /SRP)</div>
-                    <div class="legend-item"><div class="legend-color" style="background:var(--accent-purple);"></div> G_active (Active Environment)</div>
-                </div>
-                <canvas id="chart-canvas" width="450" height="215"></canvas>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="legend">
-                <div class="legend-item"><div class="legend-color" style="background:var(--accent-pink);"></div> R_t (Resonance Heat / Dynamic Potential)</div>
-                <div class="legend-item"><div class="legend-color" style="background:var(--accent-purple);"></div> C_t (Active Resonance Nodes)</div>
-            </div>
-            <canvas id="metrics-canvas" width="710" height="180"></canvas>
-        </div>
-
-        <div>
-            <div style="font-size:12px; margin-bottom:5px; font-weight:600; color:var(--text-muted);">Metrology Weather Radar Scan</div>
-            <div class="interpretation-box" id="interpretation-box">
-                <em>Run a simulation or paste results to see the diagnosis.</em>
-            </div>
-        </div>
-
-        <!-- ── Double-Box Layout Section (v6.1.1) ── -->
-        <div class="report-section">
-            <div class="report-box">
-                <h4>📊 Standard Summary Report (直接显示简报)</h4>
-                <pre id="summary-report-box" style="background: #ffffff; color: #0f172a; border: 1px solid var(--border-color);">// Run simulation to generate summary...</pre>
-            </div>
-            <div class="report-box">
-                <h4>💬 Compiled AI Prompt (大一统 AI 诊断整包)</h4>
-                <textarea id="ai-compiled-prompt" readonly placeholder="Run simulation to compile prompt..."></textarea>
-                <button class="report-btn" id="copy-ai-btn" onclick="selectAndCopyPrompt()">📋 Copy Whole Prompt (For Web Chat)</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title">WASM Raw Output / Pasted Data</div>
-            <pre id="json-output">// Results will appear here...</pre>
-        </div>
+    <div class="card">
+      <h3>📝 Scenario</h3>
+      <textarea id="scenarioInput" rows="7" spellcheck="false">{
+  "scores": {
+    "content_emotion_arousal": 7.5,
+    "social_currency_attr": 8.4,
+    "practical_value": 5.0,
+    "uniqueness": 6.0,
+    "innovation": 5.5,
+    "enhancement": 4.0,
+    "strangeness": 3.0,
+    "narrative_completeness": 7.0,
+    "remix_openness": 6.5,
+    "source_credibility": 8.0,
+    "personification": 4.5
+  },
+  "meme": {
+    "social_currency": 7.0,
+    "share_cost": 0.3,
+    "audience_trust_base": 0.6,
+    "share_circle_preference": 0.7
+  },
+  "field": {
+    "t": 0,
+    "C_t": 0.0,
+    "R_t": 7.1,
+    "R_0": 5.0,
+    "mu_psych_t": 2.08,
+    "K_pot_t": 1.0,
+    "K_pot_0": 1.0,
+    "K_soil": 1.0,
+    "K_comp": 1.0,
+    "K_base": 0.8,
+    "A_algo": 1.0,
+    "T": 0.5,
+    "T_effective": 0.5,
+    "challengability_score": 0.2,
+    "circle_opposition": 0.1,
+    "social_currency_t": 7.0
+  },
+  "env": {
+    "surge_match": 0.6,
+    "current_direction": 0.5,
+    "terrain_passability": 0.7,
+    "population_density": 0.8,
+    "connectivity": 0.6,
+    "raw_suppression": 0.2,
+    "L_cognitive": 2.0,
+    "L_operational": 1.5,
+    "L_antipathy": 1.0,
+    "content_emotion_intensity": 6.0,
+    "audience_resonance_match": 0.7,
+    "environment_emotion_fit": 0.6
+  }
+}</textarea>
     </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.2rem;">
+    <div class="param-row">
+      <label>Max Ticks <input type="number" id="maxTicks" value="100" step="1" min="1" /></label>
+      <label>Sigma <input type="number" id="sigma" value="0.05" step="0.01" min="0" /></label>
+      <label>Seed <input type="number" id="seed" value="10" step="1" min="0" /></label>
+      <label><input type="checkbox" id="enableEmergence" /> Enable Emergence</label>
+      <div style="flex:1;text-align:right;">
+        <button class="btn" id="runBtn">▶ Run Simulation</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-wrap">
+    <div class="result-tabs">
+      <button class="active" data-tab="report">📊 Report</button>
+      <button data-tab="raw">📄 Raw JSON</button>
+    </div>
+    <div id="reportPane" class="result-pane">
+      <span style="color:#57606a;">Click <span class="inline-code">Run Simulation</span> to compute 100‑step propagation report.</span>
+    </div>
+    <div id="rawPane" class="result-pane" style="display:none;">
+      <span style="color:#57606a;">Raw JSON will appear here after simulation.</span>
+    </div>
+  </div>
+
+  <div class="footnote">
+    ⚙️ All metrics computed client‑side from WASM output · no LLM · zero data exfiltration
+  </div>
 </div>
 
 <script type="module">
-    // ── Import WASM Module (Placed at absolute top scope of module) ──
-    import init, { simulate } from './pkg/lasinfon_wasm.js';
+  // --------------------------------------------------------------
+  // DOM refs
+  const configTA = document.getElementById('configInput');
+  const scenarioTA = document.getElementById('scenarioInput');
+  const maxTicksEl = document.getElementById('maxTicks');
+  const sigmaEl = document.getElementById('sigma');
+  const seedEl = document.getElementById('seed');
+  const emergeChk = document.getElementById('enableEmergence');
+  const runBtn = document.getElementById('runBtn');
+  const reportPane = document.getElementById('reportPane');
+  const rawPane = document.getElementById('rawPane');
 
-    let lastRecords = [];
-    let animInterval = null;
+  // tabs
+  document.querySelectorAll('.result-tabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.result-tabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      document.getElementById('reportPane').style.display = tab === 'report' ? 'block' : 'none';
+      document.getElementById('rawPane').style.display = tab === 'raw' ? 'block' : 'none';
+    });
+  });
 
-    // Hardcoded System Prompt Instructions for Web Chat Direct Interpretation
-    const SYSTEM_INTERPRETER_PROMPT = `You are an expert in social laser dynamics, public opinion prediction, and metrological calibration. Your task is to interpret the provided summarized Lasinfon Simulation Report and explain it in plain, actionable, and mathematically rigorous human language.
+  // --------------------------------------------------------------
+  // WASM loader
+  let wasmSimulate = null;
+  let wasmReady = false;
 
-Output Structure:
-1. One-Sentence Core Verdict - Standard potential (G_std), environmental multiplier (K_mult), active exposure (G_active).
-2. Standard vs. Active Divergence Analysis - Why did it succeed/fail? Is it because of the copy's intrinsic strength, or did it ride a massive trend? Or did a masterpiece get choked? Cite explicit differences from the summary.
-3. Driver & Bottleneck Attribution - Trace every major driver or bottleneck back to a specific input parameter (e.g. practical_value, emotion_arousal, L_antipathy).
-4. Actionable Optimization Suggestions - 1-2 concrete actions mapped to controllable parameters, ranked by ROI.
-5. Limitations & Honesty - Mention relative trends, and that random fluctuations affect results.
+  try {
+    const { default: init, simulate } = await import('./pkg/lasinfon_wasm.js');
+    await init();
+    wasmSimulate = simulate;
+    wasmReady = true;
+    reportPane.innerHTML = '<span style="color:#1a7f37;">✅ WASM loaded. Ready to run.</span>';
+  } catch (err) {
+    reportPane.innerHTML = `<span style="color:#cf222e;">❌ WASM load failed: ${err.message}</span>`;
+    console.error(err);
+  }
 
-Metrological Interpretation Rules:
-- If G_std is high (>50) but G_active is low (<10) because K_mult is low (<0.3x) -> Phenomenal Masterpiece Choked. Action: Do NOT rewrite, change channels.
-- If G_std is low (<2.0) but G_active is high (>50) because K_mult is high (>50x) -> Algo Rider. Succeeded due to trend/ad push; warn on sudden organic drops.
-- If both are high -> Coherent Resonance.
-- If gain saturation observed -> Excited population depleted naturally.
+  // --------------------------------------------------------------
+  // Report generator (pure JS, no LLM)
+  function generateReport(records) {
+    if (!records || records.length === 0) return '⚠️ No records returned from simulation.';
 
-Please analyze the following summarized simulation report:
+    const last = records.length - 1;
+    const initial = records[0];
+    // find peak G
+    let peakIdx = 0;
+    let peakG = -Infinity;
+    for (let i = 0; i < records.length; i++) {
+      const g = records[i].G ?? records[i].G_active;
+      if (g > peakG) { peakG = g; peakIdx = i; }
+    }
+    const peak = records[peakIdx];
 
-`;
+    // cumulative G_total (trapezoidal, step=1)
+    let gTotal = 0;
+    let sumLambda = 0;
+    for (let i = 0; i < records.length; i++) {
+      const g = records[i].G ?? records[i].G_active ?? 0;
+      const lambda = records[i].lambda_eff ?? 0;
+      sumLambda += lambda;
+      if (i > 0) {
+        const prevG = records[i-1].G ?? records[i-1].G_active ?? 0;
+        gTotal += (prevG + g) / 2;
+      }
+    }
+    const avgLambda = records.length > 0 ? sumLambda / records.length : 0;
 
-    // Full presets (no omissions)
-    const presets = {
-        video: {
-            config: {
-                system: { alpha: 0.2 },
-                stochastic: { eta: 0.3, theta: 0.01, gamma_saturation: 0.5 },
-                state_transfer: {
-                    gamma_social_proof: 0.5, gamma_self_catalysis: 0.1, gamma_social_pressure: 0.3,
-                    gamma_algo_trending: 0.05, attention_decay: 0.0, lambda_R_relaxation: 0.1,
-                    lambda_K_relaxation: 0.1, lambda_C_relaxation: 0.3
-                },
-                omega: { trigger_T: 6, trigger_R: 7, trigger_social_currency: 7 },
-                weights: {
-                    seed: { w_emotion_arousal: 0.21, w_social_currency: 0.18, w_practical_value: 0.09, w_info_advantage: 0.12, w_narrative_completeness: 0.125, w_remix_openness: 0.125, w_source_credibility: 0.105, w_personification: 0.045 },
-                    S: { w_cognitive: 0.6, w_operational: 0.4 },
-                    R: { w_content: 0.35, w_audience: 0.4, w_environment: 0.25 },
-                    mu_psych: { w_antipathy: 0.6, w_suspicion: 0.4 },
-                    trust: { w_source: 0.6, w_audience: 0.4 },
-                    W: { w_enhance: 0.4, w_trust: 0.3, w_unique: 0.2, w_R: 0.1 }
-                },
-                mapping: {
-                    K_pot: { base: 0.8, slope: 0.7, w_surge: 0.4, w_current: 0.4, w_terrain: 0.2 },
-                    K_soil: { base: 0.3, slope: 1.2, w_density: 0.6, w_connect: 0.4 },
-                    K_comp: { base: 1.0, slope: 0.7 },
-                    omega: { scale: 2.5, denom: 1000 }
-                }
-            },
-            scenario: {
-                scores: { content_emotion_arousal: 8.5, social_currency_attr: 8.0, practical_value: 4.0, uniqueness: 8.0, innovation: 7.0, enhancement: 6.0, strangeness: 8.0, narrative_completeness: 7.0, remix_openness: 6.0, source_credibility: 5.0, personification: 6.0 },
-                meme: { social_currency: 8.0, share_cost: 2.0, audience_trust_base: 6.0, share_circle_preference: 3.0 },
-                field: { t: 0, C_t: 0.0, R_t: 8.1, R_0: 8.1, mu_psych_t: 1.8, K_pot_t: 1.1, K_pot_0: 1.1, K_soil: 1.2, K_comp: 0.8, K_base: 1.0, A_algo: 80.0, T: 1.0, T_effective: 0.8, challengability_score: 5.0, circle_opposition: 8.0, social_currency_t: 8.0 },
-                env: { surge_match: 7.0, current_direction: 6.0, terrain_passability: 6.0, population_density: 8.0, connectivity: 7.0, raw_suppression: 2.0, L_cognitive: 3.0, L_operational: 2.0, L_antipathy: 1.0, content_emotion_intensity: 8.5, audience_resonance_match: 8.0, environment_emotion_fit: 7.0 }
-            }
-        },
-        professional: {
-            config: {
-                system: { alpha: 0.2 },
-                stochastic: { eta: 0.2, theta: 0.01, gamma_saturation: 0.5 },
-                state_transfer: {
-                    gamma_social_proof: 0.4, gamma_self_catalysis: 0.08, gamma_social_pressure: 0.2,
-                    gamma_algo_trending: 0.02, attention_decay: 0.02, lambda_R_relaxation: 0.15,
-                    lambda_K_relaxation: 0.15, lambda_C_relaxation: 0.3
-                },
-                omega: { trigger_T: 6, trigger_R: 7, trigger_social_currency: 7 },
-                weights: {
-                    seed: { w_emotion_arousal: 0.15, w_social_currency: 0.20, w_practical_value: 0.25, w_info_advantage: 0.10, w_narrative_completeness: 0.10, w_remix_openness: 0.05, w_source_credibility: 0.10, w_personification: 0.05 },
-                    S: { w_cognitive: 0.7, w_operational: 0.3 },
-                    R: { w_content: 0.30, w_audience: 0.5, w_environment: 0.20 },
-                    mu_psych: { w_antipathy: 0.5, w_suspicion: 0.5 },
-                    trust: { w_source: 0.7, w_audience: 0.3 },
-                    W: { w_enhance: 0.4, w_trust: 0.3, w_unique: 0.2, w_R: 0.1 }
-                },
-                mapping: {
-                    K_pot: { base: 0.8, slope: 0.7, w_surge: 0.4, w_current: 0.4, w_terrain: 0.2 },
-                    K_soil: { base: 0.3, slope: 1.2, w_density: 0.6, w_connect: 0.4 },
-                    K_comp: { base: 1.0, slope: 0.7 },
-                    omega: { scale: 2.5, denom: 1000 }
-                }
-            },
-            scenario: {
-                scores: { content_emotion_arousal: 3.0, social_currency_attr: 6.0, practical_value: 9.0, uniqueness: 6.0, innovation: 5.0, enhancement: 8.0, strangeness: 3.0, narrative_completeness: 9.0, remix_openness: 2.0, source_credibility: 9.0, personification: 4.0 },
-                meme: { social_currency: 6.0, share_cost: 5.0, audience_trust_base: 8.0, share_circle_preference: 5.0 },
-                field: { t: 0, C_t: 0.0, R_t: 4.5, R_0: 4.5, mu_psych_t: 3.2, K_pot_t: 0.9, K_pot_0: 0.9, K_soil: 0.8, K_comp: 0.5, K_base: 1.0, A_algo: 5.0, T: 3.0, T_effective: 2.4, challengability_score: 8.0, circle_opposition: 5.0, social_currency_t: 6.0 },
-                env: { surge_match: 4.0, current_direction: 4.0, terrain_passability: 7.0, population_density: 4.0, connectivity: 8.0, raw_suppression: 4.0, L_cognitive: 6.0, L_operational: 4.0, L_antipathy: 2.0, content_emotion_intensity: 3.0, audience_resonance_match: 5.0, environment_emotion_fit: 4.0 }
-            }
-        }
-    };
+    // threshold: initial G > 0.25 OR avgLambda > 1.0
+    const initG = initial.G ?? initial.G_active ?? 0;
+    const crossed = (initG > 0.25 || avgLambda > 1.0) ? 'YES' : 'NO';
 
-    // Safe field retriever to protect against undefined fields from old browser cache
-    function getVal(val, def = 0.0) {
-        return (val !== undefined && val !== null) ? val : def;
+    // final quadrant
+    const finalQuadrant = records[last].quadrant ?? 'Unknown';
+
+    // extra stats: min/max/avg G
+    let gMin = Infinity, gMax = -Infinity, gSum = 0, gCount = 0;
+    for (const r of records) {
+      const g = r.G ?? r.G_active ?? 0;
+      if (g < gMin) gMin = g;
+      if (g > gMax) gMax = g;
+      gSum += g;
+      gCount++;
+    }
+    const gAvg = gCount > 0 ? gSum / gCount : 0;
+
+    // helper: fmt number
+    const fmt = (v) => (typeof v === 'number' ? v.toFixed(4) : String(v));
+
+    // lines
+    const lines = [];
+    lines.push('=== LASINFON METROLOGY SIMULATION SUMMARY REPORT ===');
+    lines.push(`Timeline ticks: 0 to ${records.length-1} (Total steps: ${records.length})`);
+    lines.push('');
+
+    // INITIAL
+    lines.push('[INITIAL STATE (t=0) - COLD START SECTION]:');
+    lines.push(`- G_active (Active Simulated Exposure): ${fmt(initG)}`);
+    const initStd = initial.G_std ?? 0;
+    lines.push(`- G_std (Standard Reference Potency / SRP): ${fmt(initStd)}`);
+    const initK = initial.K_mult ?? 1;
+    lines.push(`- K_mult (Environmental Multiplier / Wind Speed): ${fmt(initK)}x`);
+    const initR = initial.R_t ?? 0;
+    lines.push(`- R_t (Resonance Heat / Emotional Alignment): ${fmt(initR)}`);
+    const initC = initial.C_t ?? 0;
+    lines.push(`- C_t (Active Resonance Node Ratio): ${fmt(initC*100)}%`);
+    const initMu = initial.mu_psych_t ?? 0;
+    lines.push(`- mu_psych (Psychological Friction / Social Resistance): ${fmt(initMu)}`);
+    lines.push('');
+
+    // PEAK
+    lines.push(`[PEAK STATE (t=${peak.t ?? peakIdx}) - INFLECTION POINT]:`);
+    lines.push(`- Peak G_active: ${fmt(peakG)}`);
+    const peakStd = peak.G_std ?? 0;
+    lines.push(`- Peak G_std (Standard Potency at Peak): ${fmt(peakStd)}`);
+    const peakK = peak.K_mult ?? 1;
+    lines.push(`- Peak K_mult (Wind Speed at Peak): ${fmt(peakK)}x`);
+    lines.push('');
+
+    // FINAL
+    lines.push(`[FINAL STATE (t=${records.length-1}) - STEADY STATE / EXHAUSTION]:`);
+    const finalG = records[last].G ?? records[last].G_active ?? 0;
+    lines.push(`- Final G_active: ${fmt(finalG)}`);
+    const finalStd = records[last].G_std ?? 0;
+    lines.push(`- Final G_std: ${fmt(finalStd)}`);
+    const finalK = records[last].K_mult ?? 1;
+    lines.push(`- Final K_mult: ${fmt(finalK)}x`);
+    const finalR = records[last].R_t ?? 0;
+    lines.push(`- Final R_t: ${fmt(finalR)}`);
+    const finalC = records[last].C_t ?? 0;
+    lines.push(`- Final C_t: ${fmt(finalC*100)}%`);
+    lines.push('');
+
+    // INTEGRATED
+    lines.push('[INTEGRATED PROPAGATION METRICS - LIFECYCLE INTEGRAL]:');
+    lines.push(`- Cumulative Exposure (G_total - Area Under Active Curve): ${fmt(gTotal)}`);
+    lines.push(`- Average Gain Multiplier (lambda_eff - Average Growth Velocity): ${fmt(avgLambda)}`);
+    lines.push(`- Autonomous Growth Crossed Threshold? ${crossed} (initial G=${fmt(initG)} > 0.25 or avgλ>1.0)`);
+    lines.push(`- Final Propagation Quadrant (Phase State): ${finalQuadrant}`);
+    lines.push('');
+
+    // extra stats
+    lines.push('[STATISTICAL SUMMARY - G_active distribution]:');
+    lines.push(`- Min G_active: ${fmt(gMin)}`);
+    lines.push(`- Max G_active: ${fmt(gMax)}`);
+    lines.push(`- Average G_active: ${fmt(gAvg)}`);
+    lines.push('======================================================');
+
+    return lines.join('\n');
+  }
+
+  // --------------------------------------------------------------
+  // Run button handler
+  runBtn.addEventListener('click', async () => {
+    if (!wasmReady || !wasmSimulate) {
+      reportPane.innerHTML = '⚠️ WASM not ready. Please refresh.';
+      return;
     }
 
-    async function start() {
-        await init();
-        const runBtn = document.getElementById("run-btn");
-        const animBtn = document.getElementById("anim-btn");
-        const presetSelect = document.getElementById("preset-selector");
-        const customPanel = document.getElementById("custom-panel");
-        const visualizeBtn = document.getElementById("visualize-btn");
-        const renderAiBtn = document.getElementById("render-ai-btn");
+    runBtn.disabled = true;
+    runBtn.textContent = '⏳ Computing...';
+    reportPane.innerHTML = '⏳ Running propagation...';
 
-        presetSelect.addEventListener("change", () => {
-            customPanel.style.display = presetSelect.value === "custom" ? "block" : "none";
-        });
+    try {
+      const config = JSON.parse(configTA.value);
+      const scenario = JSON.parse(scenarioTA.value);
+      const maxTicks = parseInt(maxTicksEl.value, 10) || 100;
+      const sigma = parseFloat(sigmaEl.value) || 0.05;
+      const seed = BigInt(parseInt(seedEl.value, 10) || 10);
+      const enableEmergence = emergeChk.checked;
 
-        runBtn.addEventListener("click", async () => {
-            if (animInterval) { clearInterval(animInterval); animInterval = null; }
-            const max_ticks = parseInt(document.getElementById("ticks").value);
-            const sigma = parseFloat(document.getElementById("sigma").value);
-            const seed = BigInt(document.getElementById("seed").value);
+      const resultStr = wasmSimulate(
+        JSON.stringify(config),
+        JSON.stringify(scenario),
+        maxTicks,
+        sigma,
+        seed,
+        enableEmergence
+      );
 
-            let configJSON, scenarioJSON;
-            if (presetSelect.value === "custom") {
-                const raw = document.getElementById("custom-json").value.trim();
-                if (!raw) { alert("Please paste your custom JSON."); return; }
-                try {
-                    const parsed = JSON.parse(raw);
-                    if (!parsed.config || !parsed.scenario) {
-                        alert("Custom JSON must contain both 'config' and 'scenario' objects.");
-                        return;
-                    }
-                    configJSON = JSON.stringify(parsed.config);
-                    scenarioJSON = JSON.stringify(parsed.scenario);
-                } catch (e) {
-                    alert("Invalid JSON: " + e.message);
-                    return;
-                }
-            } else {
-                const target = presets[presetSelect.value];
-                if (!target) { alert("Preset not found."); return; }
-                configJSON = JSON.stringify(target.config);
-                scenarioJSON = JSON.stringify(target.scenario);
-            }
+      const result = JSON.parse(resultStr);
+      // result can be { records: [...] } or direct array? we handle both.
+      let records = result.records || result;
+      if (!Array.isArray(records)) {
+        // fallback: if result is single object wrap it
+        records = [result];
+      }
 
-            try {
-                const result_string = simulate(configJSON, scenarioJSON, max_ticks, sigma, seed, false);
-                const records = JSON.parse(result_string);
-                lastRecords = records;
-                document.getElementById("json-output").textContent = JSON.stringify(records, null, 2);
-                drawAll(records, max_ticks, seed.toString());
-                showDiagnostic(records);
-                animBtn.disabled = false;
-            } catch (err) {
-                document.getElementById("json-output").textContent = "Simulation crashed: " + err;
-            }
-        });
+      // generate report
+      const report = generateReport(records);
+      reportPane.innerHTML = `<pre>${report}</pre>`;
 
-        animBtn.addEventListener("click", () => {
-            if (!lastRecords.length) return;
-            if (animInterval) clearInterval(animInterval);
-            let frame = 0;
-            animBtn.disabled = true;
-            document.getElementById("run-btn").disabled = true;
-            const seedBase = document.getElementById("seed").value.toString();
-            const maxTicks = lastRecords.length;
-            animInterval = setInterval(() => {
-                const slice = lastRecords.slice(0, frame + 1);
-                drawAll(slice, maxTicks, seedBase + frame);
-                frame++;
-                if (frame >= lastRecords.length) {
-                    clearInterval(animInterval);
-                    animInterval = null;
-                    animBtn.disabled = false;
-                    document.getElementById("run-btn").disabled = false;
-                }
-            }, 120);
-        });
+      // raw JSON
+      rawPane.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
 
-        // Visualize pasted results
-        visualizeBtn.addEventListener("click", () => {
-            const raw = document.getElementById("visualize-json").value.trim();
-            if (!raw) { alert("Paste some JSON first."); return; }
-            try {
-                let parsed = JSON.parse(raw);
-                if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && parsed.records) {
-                    parsed = parsed.records;
-                }
-                if (!Array.isArray(parsed)) {
-                    alert("Pasted data must be an array of records or an object with a 'records' array.");
-                    return;
-                }
-                lastRecords = parsed;
-                document.getElementById("json-output").textContent = JSON.stringify(parsed, null, 2);
-                const maxTicks = parsed.length;
-                drawAll(parsed, maxTicks, "pasted");
-                showDiagnostic(parsed);
-                animBtn.disabled = false;
-            } catch (e) {
-                alert("Invalid JSON: " + e.message);
-            }
-        });
-
-        // Pasted Web Chat AI Diagnosis Renderer
-        renderAiBtn.addEventListener("click", () => {
-            const rawText = document.getElementById("ai-response-text").value.trim();
-            if (!rawText) { alert("Paste the AI diagnosis Markdown first!"); return; }
-            renderAIResponse(rawText);
-        });
+    } catch (err) {
+      reportPane.innerHTML = `<span style="color:#cf222e;">❌ Error: ${err.message}</span>`;
+      rawPane.innerHTML = `<span style="color:#cf222e;">${err.message}</span>`;
+      console.error(err);
+    } finally {
+      runBtn.disabled = false;
+      runBtn.textContent = '▶ Run Simulation';
     }
+  });
 
-    function drawAll(records, maxTicks, seedStr) {
-        const lastRecord = records[records.length - 1];
-        drawGrid(lastRecord, seedStr + "_grid");
-        drawChart(records, maxTicks);
-        drawMetrics(records, maxTicks);
-        compileAIBoxes(records);
-    }
-
-    function drawGrid(record, seedStr) {
-        const canvas = document.getElementById("grid-canvas");
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (!record) return;
-        const C_t = record.C_t;
-        const rand = seededRandom(seedStr);
-        const cells = 15;
-        const size = canvas.width / cells;
-        for (let x = 0; x < cells; x++) {
-            for (let y = 0; y < cells; y++) {
-                const active = rand() < C_t;
-                ctx.fillStyle = active ? `rgba(167, 139, 250, ${0.3 + C_t * 0.7})` : "#f1f5f9";
-                ctx.strokeStyle = "#e2e8f0";
-                ctx.fillRect(x * size, y * size, size, size);
-                ctx.strokeRect(x * size, y * size, size, size);
-            }
-        }
-    }
-
-    function drawChart(records, maxTicks) {
-        const canvas = document.getElementById("chart-canvas");
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const pad = 30;
-        const w = canvas.width - pad * 2;
-        const h = canvas.height - pad * 2;
-        ctx.strokeStyle = "#cbd5e1";
-        ctx.beginPath();
-        ctx.moveTo(pad, pad); ctx.lineTo(pad, canvas.height - pad);
-        ctx.lineTo(canvas.width - pad, canvas.height - pad);
-        ctx.stroke();
-        if (!records.length) return;
-
-        // Find max exposure across both G_active (G) and G_std with fallback
-        const max_G = Math.max(
-            ...records.map(r => getVal(r.G, 0.0)),
-            ...records.map(r => getVal(r.G_std, getVal(r.G, 0.0))),
-            2.0
-        );
-        const effectiveMaxTicks = maxTicks || records.length;
-
-        // Safeguard Division-by-Zero (Ruler boundary protection when effectiveMaxTicks <= 1)
-        const computeX = (idx) => {
-            return effectiveMaxTicks > 1 ? pad + (idx / (effectiveMaxTicks - 1)) * w : pad;
-        };
-
-        // Draw G_std (Standard Reference Potency - Blue Dashed Line) with fallback to G
-        ctx.strokeStyle = "#3b82f6";
-        ctx.setLineDash([4, 4]);
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        records.forEach((r, idx) => {
-            const x = computeX(idx);
-            const g_std_val = getVal(r.G_std, getVal(r.G, 0.0));
-            const y = canvas.height - pad - (g_std_val / max_G) * h;
-            if (idx === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        });
-        ctx.stroke();
-        ctx.setLineDash([]); // Reset line dash
-
-        // Draw G_active (Active Environment - Purple Solid Line)
-        ctx.strokeStyle = "#7c3aed";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        records.forEach((r, idx) => {
-            const x = computeX(idx);
-            const y = canvas.height - pad - (getVal(r.G, 0.0) / max_G) * h;
-            if (idx === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        });
-        ctx.stroke();
-    }
-
-    function drawMetrics(records, maxTicks) {
-        const canvas = document.getElementById("metrics-canvas");
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const pad = 35;
-        const w = canvas.width - pad * 2;
-        const h = canvas.height - pad * 2;
-        ctx.strokeStyle = "#cbd5e1";
-        ctx.beginPath();
-        ctx.moveTo(pad, pad); ctx.lineTo(pad, canvas.height - pad);
-        ctx.lineTo(canvas.width - pad, canvas.height - pad);
-        ctx.stroke();
-        if (!records.length) return;
-        const max_R = 10;
-        const max_C = 1.0;
-        const effectiveMaxTicks = maxTicks || records.length;
-
-        // Safeguard Division-by-Zero
-        const computeX = (idx) => {
-            return effectiveMaxTicks > 1 ? pad + (idx / (effectiveMaxTicks - 1)) * w : pad;
-        };
-
-        // Draw R_t (Resonance Heat - Pink Line)
-        ctx.strokeStyle = "#db2777";
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        records.forEach((r, idx) => {
-            const x = computeX(idx);
-            const y = canvas.height - pad - (getVal(r.R_t, 0.0) / max_R) * h;
-            if (idx === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        });
-        ctx.stroke();
-
-        // Draw C_t (Active Nodes - Purple Line)
-        ctx.strokeStyle = "#7c3aed";
-        ctx.beginPath();
-        records.forEach((r, idx) => {
-            const x = computeX(idx);
-            const y = canvas.height - pad - (getVal(r.C_t, 0.0) / max_C) * h;
-            if (idx === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        });
-        ctx.stroke();
-
-        // Labels
-        ctx.fillStyle = "#7c3aed";
-        ctx.font = "9px monospace";
-        for (let v = 0; v <= 1.0; v += 0.2) {
-            const y = canvas.height - pad - (v / max_C) * h;
-            ctx.fillText(`${(v*100).toFixed(0)}%`, canvas.width - pad + 5, y + 3);
-        }
-        ctx.fillStyle = "#db2777";
-        for (let v = 0; v <= 10; v += 2) {
-            const y = canvas.height - pad - (v / max_R) * h;
-            ctx.fillText(v.toString(), pad - 18, y + 3);
-        }
-    }
-
-    function showDiagnostic(records) {
-        const last = records[records.length - 1];
-        const G_std = getVal(last.G_std, getVal(last.G, 0.0));
-        const G_active = getVal(last.G, 0.0);
-        const K_mult = getVal(last.K_mult, 1.0);
-        const Lambda = getVal(last.lambda_eff, 0.0);
-        let header = "", scan = "", action = "";
-
-        if (Lambda > 1.0 && G_active >= 1.0) {
-            header = "🟢 True Self-Growth (Stimulated Coherent Amplification)";
-            scan = `Standard Potential (G_std): <strong>${G_std.toFixed(2)}</strong> | Active Outcome (G_active): <strong>${G_active.toFixed(2)}</strong> | Environmental Multiplier (K_mult): <strong>${K_mult.toFixed(2)}x</strong>`;
-            action = `<div class="diagnostic-card"><span class="badge badge-green">Green</span> Strong propagation resonance. The environment is amplifying your content by <strong>${K_mult.toFixed(2)}x</strong>.</div>`;
-        } else if (Lambda < 1.0 && G_active >= 1.0) {
-            header = "🟡 Pseudo Self-Growth (Algorithm-Driven Flooding)";
-            scan = `Standard Potency (G_std): <strong>${G_std.toFixed(2)}</strong> | Active Outcome (G_active): <strong>${G_active.toFixed(2)}</strong> | Environmental Multiplier (K_mult): <strong>${K_mult.toFixed(2)}x</strong>`;
-            action = `<div class="diagnostic-card"><span class="badge badge-yellow">Fix</span> Your copy's intrinsic strength (G_std) is low, but the environment (A_algo/platform trending) is holding it up. Raise emotion arousal to trigger real self-growth.</div>`;
-        } else if (Lambda > 1.0 && G_active < 1.0) {
-            header = "🔴 Choked / Suffocated (High-Resistance Blockage)";
-            scan = `Standard Potency (G_std): <strong>${G_std.toFixed(2)}</strong> | Active Outcome (G_active): <strong>${G_active.toFixed(2)}</strong> | Environmental Multiplier (K_mult): <strong>${K_mult.toFixed(2)}x</strong>`;
-            action = `<div class="diagnostic-card"><span class="badge badge-red">Fix</span> Your content has propagation potential, but the current channel is extremely hostile (K_mult is compressing it down). Decrease share cost or choose a less crowded niche.</div>`;
-        } else {
-            header = "💀 Decay (Sub-Threshold Dissipation)";
-            scan = `Standard Potency (G_std): <strong>${G_std.toFixed(2)}</strong> | Active Outcome (G_active): <strong>${G_active.toFixed(2)}</strong> | Environmental Multiplier (K_mult): <strong>${K_mult.toFixed(2)}x</strong>`;
-            action = `<div class="diagnostic-card"><span class="badge badge-red">Critical</span> Content has no propagation potential. Standard baseline is near-zero. Boost trust base and emotional value.</div>`;
-        }
-
-        document.getElementById("interpretation-box").innerHTML = `<h4>${header}</h4><p>${scan}</p>${action}`;
-    }
-
-    // Mathematical and statistical summary generator (non-LLM) with full safety fallback
-    function generateSummaryReport(records) {
-        if (!records || records.length === 0) return "";
-        const first = records[0];
-        const last = records[records.length - 1];
-
-        // Find Peak G (exposure) and its tick
-        let peak_G = 0;
-        let peak_tick = 0;
-        let peak_record = last;
-        records.forEach(r => {
-            const g_val = getVal(r.G, 0.0);
-            if (g_val > peak_G) {
-                peak_G = g_val;
-                peak_tick = r.t;
-                peak_record = r;
-            }
-        });
-
-        // Calculate Cumulative Exposure (G_total)
-        const total_G = records.reduce((acc, r) => acc + getVal(r.G, 0.0), 0);
-
-        // Calculate average lambda_eff
-        const avg_lambda_eff = records.reduce((acc, r) => acc + getVal(r.lambda_eff, 0.0), 0) / records.length;
-
-        // Detect phase transition (did lambda_eff cross 1.0?)
-        const crossed_threshold = records.some(r => getVal(r.lambda_eff, 0.0) > 1.0);
-        const threshold_tick = records.findIndex(r => getVal(r.lambda_eff, 0.0) > 1.0);
-
-        // Detect saturation (did lambda_eff drop back below 1.0 after crossing?)
-        let saturated_tick = -1;
-        if (crossed_threshold && threshold_tick !== -1) {
-            const post_threshold_records = records.slice(threshold_tick);
-            const sat_record = post_threshold_records.find(r => getVal(r.lambda_eff, 0.0) < 1.0);
-            if (sat_record) {
-                saturated_tick = sat_record.t;
-            }
-        }
-
-        // Format a super compact, highly readable text summary for LLM context optimization
-        let report = `=== LASINFON SIMULATION SUMMARY REPORT ===\n`;
-        report += `Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})\n\n`;
-        report += `[INITIAL STATE (t=0)]:\n`;
-        report += `- G_active: ${getVal(first.G, 0.0).toFixed(2)} | G_std: ${getVal(first.G_std, getVal(first.G, 0.0)).toFixed(2)} | K_mult: ${getVal(first.K_mult, 1.0).toFixed(2)}x\n`;
-        report += `- R_t (Resonance): ${getVal(first.R_t, 0.0).toFixed(2)} | C_t (Active ratio): ${(getVal(first.C_t, 0.0)*100).toFixed(1)}% | mu_psych: ${getVal(first.mu_psych_t, 0.0).toFixed(2)}\n\n`;
-        report += `[PEAK STATE (t=${peak_tick})]:\n`;
-        report += `- Peak G_active: ${peak_G.toFixed(2)} | G_std: ${getVal(peak_record.G_std, getVal(peak_record.G, 0.0)).toFixed(2)} | K_mult: ${getVal(peak_record.K_mult, 1.0).toFixed(2)}x\n`;
-        report += `- R_t: ${getVal(peak_record.R_t, 0.0).toFixed(2)} | C_t: ${(getVal(peak_record.C_t, 0.0)*100).toFixed(1)}%\n\n`;
-        report += `[FINAL STATE (t=${last.t})]:\n`;
-        report += `- Final G_active: ${getVal(last.G, 0.0).toFixed(2)} | G_std: ${getVal(last.G_std, getVal(last.G, 0.0)).toFixed(2)} | K_mult: ${getVal(last.K_mult, 1.0).toFixed(2)}x\n`;
-        report += `- R_t: ${getVal(last.R_t, 0.0).toFixed(2)} | C_t: ${(getVal(last.C_t, 0.0)*100).toFixed(1)}%\n\n`;
-        report += `[INTEGRATED PROPAGATION METRICS]:\n`;
-        report += `- Cumulative Exposure (G_total): ${total_G.toFixed(2)}\n`;
-        report += `- Average Gain Multiplier (lambda_eff): ${avg_lambda_eff.toFixed(4)}\n`;
-        report += `- Autonomous Growth Crossed Threshold? ${crossed_threshold ? "YES (at t=" + threshold_tick + ")" : "NO"}\n`;
-        report += `- Gain Saturation Observed? ${saturated_tick !== -1 ? "YES (at t=" + saturated_tick + ")" : "NO"}\n`;
-        report += `- Final Phase Quadrant: ${last.quadrant}\n`;
-        report += `==========================================`;
-
-        return report;
-    }
-
-    // Dynamically compile both Standard Summary and Full AI Prompt into UI boxes with safety filters
-    function compileAIBoxes(records) {
-        if (!records || records.length === 0) return;
-        const summary = generateSummaryReport(records);
-        
-        // Show Standard Summary in left box
-        document.getElementById("summary-report-box").textContent = summary;
-
-        // Compile full prompt (System Prompt + Summary Report) in right box
-        const fullPrompt = `${SYSTEM_INTERPRETER_PROMPT}${summary}`;
-        document.getElementById("ai-compiled-prompt").value = fullPrompt;
-    }
-
-    // Secure, highly compatible fallback copy script for local and unsecure web protocols
-    window.selectAndCopyPrompt = function() {
-        const textarea = document.getElementById("ai-compiled-prompt");
-        if (!textarea.value) { alert("Run a simulation to compile prompt first!"); return; }
-        
-        textarea.select();
-        textarea.setSelectionRange(0, 99999); // For mobile devices
-        
-        try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                alert("📋 Copied compiled AI Diagnostic Prompt! Paste directly into ChatGPT, Claude, or DeepSeek Web Chat.");
-            } else {
-                alert("Please press Cmd+C (or Ctrl+C) to copy the highlighted text manually.");
-            }
-        } catch (err) {
-            alert("Please press Cmd+C (or Ctrl+C) to copy the highlighted text manually.");
-        }
-    };
-
-    // Lightweight markdown-to-HTML parser to render AI Web Chat response inside the dashboard
-    function renderAIResponse(text) {
-        if (!text.trim()) return;
-        let html = text
-            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") // escape HTML
-            .replace(/^### (.*$)/gim, '<h4>$1</h4>')
-            .replace(/^## (.*$)/gim, '<h3>$1</h3>')
-            .replace(/^# (.*$)/gim, '<h2>$1</h2>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/\n/g, '<br>');
-        
-        document.getElementById("interpretation-box").innerHTML = `<h4>🤖 AI Expert Diagnostic Scan</h4><div style="font-size:12px; color:var(--text-muted); text-align:left;">${html}</div>`;
-    }
-
-    start();
+  // Auto-run on load? optional, but we let user click.
+  // we do NOT auto-run to avoid surprise.
 </script>
 </body>
 </html>
