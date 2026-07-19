@@ -22,7 +22,8 @@ interface AppStore {
   seed: string;
   customEnv: any | null;
   customEnvActive: boolean;
-  diagnosticScores: any | null;  // 新增：存储评分结果
+  diagnosticScores: any | null;
+  apiEngine: string; // 新增
 
   startFlow: () => void;
   setPlatform: (platform: string) => void;
@@ -39,6 +40,7 @@ interface AppStore {
   setCustomEnv: (env: any, meme: any) => void;
   clearCustomEnv: () => void;
   setDiagnosticScores: (scores: any) => void;
+  setApiEngine: (engine: string) => void; // 新增
 }
 
 export const useStore = create<AppStore>((set) => ({
@@ -54,6 +56,7 @@ export const useStore = create<AppStore>((set) => ({
   customEnv: null,
   customEnvActive: false,
   diagnosticScores: null,
+  apiEngine: "Dev Sandbox (Mock)", // 新增
 
   startFlow: () => set({ state: "collecting", step: 1, activeDiagnosticResult: null }),
   setPlatform: (platform) => set((state) => ({ inputs: { ...state.inputs, platform } })),
@@ -71,6 +74,7 @@ export const useStore = create<AppStore>((set) => ({
     customEnv: null, 
     customEnvActive: false,
     diagnosticScores: null,
+    apiEngine: "Dev Sandbox (Mock)",
   }),
   setMaxTicks: (maxTicks) => set({ maxTicks }),
   setSigma: (sigma) => set({ sigma }),
@@ -80,4 +84,5 @@ export const useStore = create<AppStore>((set) => ({
   setCustomEnv: (env, meme) => set({ customEnv: { env, meme }, customEnvActive: true }),
   clearCustomEnv: () => set({ customEnv: null, customEnvActive: false }),
   setDiagnosticScores: (scores) => set({ diagnosticScores: scores }),
+  setApiEngine: (engine) => set({ apiEngine: engine }),
 }));

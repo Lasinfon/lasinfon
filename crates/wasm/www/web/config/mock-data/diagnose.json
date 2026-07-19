@@ -1,0 +1,40 @@
+{
+  "scores": {
+    "content_emotion_arousal": 4,
+    "social_currency_attr": 3,
+    "practical_value": 1,
+    "uniqueness": 2,
+    "innovation": 2,
+    "enhancement": 2,
+    "strangeness": 2,
+    "narrative_completeness": 4,
+    "remix_openness": 1,
+    "source_credibility": 2,
+    "personification": 4
+  },
+  "meme": {
+    "social_currency": 6.5,
+    "share_cost": 4.0,
+    "audience_trust_base": 7.0,
+    "share_circle_preference": 6.0
+  },
+  "env": {
+    "surge_match": 3.5,
+    "current_direction": 5.5,
+    "terrain_passability": 7.0,
+    "population_density": 8.5,
+    "connectivity": 8.5,
+    "raw_suppression": 2.0,
+    "L_cognitive": 2.0,
+    "L_operational": 1.0,
+    "L_antipathy": 2.0,
+    "content_emotion_intensity": 5.5,
+    "audience_resonance_match": 6.5,
+    "environment_emotion_fit": 5.5
+  },
+  "engine": "mock",
+  "confidence": {
+    "content_access": true,
+    "reliability": "high"
+  }
+}
