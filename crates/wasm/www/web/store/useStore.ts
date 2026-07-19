@@ -2,10 +2,8 @@
 
 import { create } from "zustand";
 
-// Defined finite states representing the Ginlix-inspired diagnostic lifecycle
 export type AppState = "idle" | "collecting" | "diagnosing" | "rendering";
 
-// Decoupled input contract demanded by the backend API
 export interface DiagnosticsInput {
   platform: string;
   purpose: string;
@@ -13,20 +11,19 @@ export interface DiagnosticsInput {
 }
 
 interface AppStore {
-  // State variables
   state: AppState;
-  step: number; // 3-step wizard progress tracker (1: Platform, 2: Purpose, 3: Content)
+  step: number;
   inputs: DiagnosticsInput;
   isLoading: boolean;
-  activeDiagnosticResult: any | null; // Stores final calibrated simulation result JSON
+  activeDiagnosticResult: any | null;
   diagnosticLogs: string[];
-
-  // Control Flow Parameters (Configurable, no more hardcoding!)
   maxTicks: number;
   sigma: number;
   seed: string;
+  // 新增：用户自定义环境参数（可选）
+  customEnv: any | null;      // 存储 { env, meme } 对象，用于覆盖预设
+  customEnvActive: boolean;   // 是否启用自定义环境
 
-  // Event-driven state transition actions
   startFlow: () => void;
   setPlatform: (platform: string) => void;
   setPurpose: (purpose: string) => void;
@@ -34,84 +31,41 @@ interface AppStore {
   nextStep: () => void;
   prevStep: () => void;
   resetFlow: () => void;
-  
-  // Setters for control flow parameters
   setMaxTicks: (ticks: number) => void;
   setSigma: (sigma: number) => void;
   setSeed: (seed: string) => void;
-
-  // Transition actions for the asynchronous API layer
   setDiagnosing: (logs: string[]) => void;
   setDiagnosticResult: (result: any) => void;
+  // 新增：设置自定义环境
+  setCustomEnv: (env: any, meme: any) => void;
+  clearCustomEnv: () => void;
 }
 
-/**
- * Global Zustand State Machine for Lasinfon.
- * No polling allowed; transitions are strictly event-driven.
- */
 export const useStore = create<AppStore>((set) => ({
   state: "idle",
   step: 1,
-  inputs: {
-    platform: "",
-    purpose: "",
-    content: "",
-  },
+  inputs: { platform: "", purpose: "", content: "" },
   isLoading: false,
   activeDiagnosticResult: null,
   diagnosticLogs: [],
-
-  // Default control flow values (v6.3.0 - fully aligned with Ground State "1")
   maxTicks: 100,
   sigma: 0.05,
-  seed: "1", // Master seed defaults to "1" representing first pristine trial
+  seed: "1",
+  customEnv: null,
+  customEnvActive: false,
 
-  // transition: idle -> collecting
   startFlow: () => set({ state: "collecting", step: 1, activeDiagnosticResult: null }),
-  
-  setPlatform: (platform) =>
-    set((state) => ({ inputs: { ...state.inputs, platform } })),
-    
-  setPurpose: (purpose) =>
-    set((state) => ({ inputs: { ...state.inputs, purpose } })),
-    
-  setContent: (content) =>
-    set((state) => ({ inputs: { ...state.inputs, content } })),
-    
-  nextStep: () =>
-    set((state) => {
-      if (state.step < 3) {
-        return { step: state.step + 1 };
-      }
-      return {};
-    }),
-    
-  prevStep: () =>
-    set((state) => {
-      if (state.step > 1) {
-        return { step: state.step - 1 };
-      }
-      return {};
-    }),
-    
-  resetFlow: () =>
-    set({
-      state: "idle",
-      step: 1,
-      inputs: { platform: "", purpose: "", content: "" },
-      isLoading: false,
-      activeDiagnosticResult: null,
-      diagnosticLogs: [],
-    }),
-    
+  setPlatform: (platform) => set((state) => ({ inputs: { ...state.inputs, platform } })),
+  setPurpose: (purpose) => set((state) => ({ inputs: { ...state.inputs, purpose } })),
+  setContent: (content) => set((state) => ({ inputs: { ...state.inputs, content } })),
+  nextStep: () => set((state) => ({ step: state.step < 3 ? state.step + 1 : state.step })),
+  prevStep: () => set((state) => ({ step: state.step > 1 ? state.step - 1 : state.step })),
+  resetFlow: () => set({ state: "idle", step: 1, inputs: { platform: "", purpose: "", content: "" }, isLoading: false, activeDiagnosticResult: null, diagnosticLogs: [], customEnv: null, customEnvActive: false }),
   setMaxTicks: (maxTicks) => set({ maxTicks }),
   setSigma: (sigma) => set({ sigma }),
   setSeed: (seed) => set({ seed }),
-
-  // transition: collecting -> diagnosing
   setDiagnosing: (logs) => set({ state: "diagnosing", isLoading: true, diagnosticLogs: logs }),
-  
-  // transition: diagnosing -> rendering
-  setDiagnosticResult: (result) =>
-    set({ state: "rendering", isLoading: false, activeDiagnosticResult: result }),
+  setDiagnosticResult: (result) => set({ state: "rendering", isLoading: false, activeDiagnosticResult: result }),
+  setCustomEnv: (env, meme) => set({ customEnv: { env, meme }, customEnvActive: true }),
+  clearCustomEnv: () => set({ customEnv: null, customEnvActive: false }),
 }));
