@@ -20,9 +20,9 @@ interface AppStore {
   maxTicks: number;
   sigma: number;
   seed: string;
-  // 新增：用户自定义环境参数（可选）
-  customEnv: any | null;      // 存储 { env, meme } 对象，用于覆盖预设
-  customEnvActive: boolean;   // 是否启用自定义环境
+  customEnv: any | null;
+  customEnvActive: boolean;
+  diagnosticScores: any | null;  // 新增：存储评分结果
 
   startFlow: () => void;
   setPlatform: (platform: string) => void;
@@ -36,9 +36,9 @@ interface AppStore {
   setSeed: (seed: string) => void;
   setDiagnosing: (logs: string[]) => void;
   setDiagnosticResult: (result: any) => void;
-  // 新增：设置自定义环境
   setCustomEnv: (env: any, meme: any) => void;
   clearCustomEnv: () => void;
+  setDiagnosticScores: (scores: any) => void;
 }
 
 export const useStore = create<AppStore>((set) => ({
@@ -53,6 +53,7 @@ export const useStore = create<AppStore>((set) => ({
   seed: "1",
   customEnv: null,
   customEnvActive: false,
+  diagnosticScores: null,
 
   startFlow: () => set({ state: "collecting", step: 1, activeDiagnosticResult: null }),
   setPlatform: (platform) => set((state) => ({ inputs: { ...state.inputs, platform } })),
@@ -60,7 +61,17 @@ export const useStore = create<AppStore>((set) => ({
   setContent: (content) => set((state) => ({ inputs: { ...state.inputs, content } })),
   nextStep: () => set((state) => ({ step: state.step < 3 ? state.step + 1 : state.step })),
   prevStep: () => set((state) => ({ step: state.step > 1 ? state.step - 1 : state.step })),
-  resetFlow: () => set({ state: "idle", step: 1, inputs: { platform: "", purpose: "", content: "" }, isLoading: false, activeDiagnosticResult: null, diagnosticLogs: [], customEnv: null, customEnvActive: false }),
+  resetFlow: () => set({ 
+    state: "idle", 
+    step: 1, 
+    inputs: { platform: "", purpose: "", content: "" }, 
+    isLoading: false, 
+    activeDiagnosticResult: null, 
+    diagnosticLogs: [], 
+    customEnv: null, 
+    customEnvActive: false,
+    diagnosticScores: null,
+  }),
   setMaxTicks: (maxTicks) => set({ maxTicks }),
   setSigma: (sigma) => set({ sigma }),
   setSeed: (seed) => set({ seed }),
@@ -68,4 +79,5 @@ export const useStore = create<AppStore>((set) => ({
   setDiagnosticResult: (result) => set({ state: "rendering", isLoading: false, activeDiagnosticResult: result }),
   setCustomEnv: (env, meme) => set({ customEnv: { env, meme }, customEnvActive: true }),
   clearCustomEnv: () => set({ customEnv: null, customEnvActive: false }),
+  setDiagnosticScores: (scores) => set({ diagnosticScores: scores }),
 }));

@@ -22,6 +22,7 @@ export default function Home() {
     seed,
     customEnv,
     customEnvActive,
+    diagnosticScores,
     startFlow,
     setPlatform,
     setPurpose,
@@ -36,12 +37,18 @@ export default function Home() {
     setDiagnosticResult,
     setCustomEnv,
     clearCustomEnv,
+    setDiagnosticScores,
   } = useStore();
 
   const [wasmModule, setWasmModule] = useState<any>(null);
   const [logIndex, setLogIndex] = useState(0);
   const [apiEngine, setApiEngine] = useState<string>("Dev Sandbox (Mock)");
   const [interpreterPrompt, setInterpreterPrompt] = useState<string>("");
+
+  // ── 审计相关状态 ──
+  const [auditReport, setAuditReport] = useState<string>("");
+  const [isAuditing, setIsAuditing] = useState<boolean>(false);
+  const [showAudit, setShowAudit] = useState<boolean>(false);
 
   // ── 环境参数本地状态（Step 3 中使用） ──
   const [envSource, setEnvSource] = useState<'preset' | 'manual' | 'llm'>('preset');
@@ -221,6 +228,9 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
         clearCustomEnv();
       }
 
+      // ── 保存评分结果（供审计使用） ──
+      setDiagnosticScores(scenarioData);
+
       setLogIndex(1);
       useStore.setState((state) => ({
         diagnosticLogs: [
@@ -306,6 +316,37 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
     const report = generateSummaryText(activeDiagnosticResult);
     await navigator.clipboard.writeText(report);
     alert('📄 报告已复制');
+  };
+
+  // ── 审计功能 ──
+  const triggerAudit = async () => {
+    if (!inputs.content || !diagnosticScores) {
+      alert('请先完成推演，且确保评分数据存在。');
+      return;
+    }
+    setIsAuditing(true);
+    setShowAudit(true);
+    try {
+      const res = await fetch('/api/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: inputs.content,
+          scores: diagnosticScores,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || '审计请求失败');
+      }
+      const data = await res.json();
+      setAuditReport(data.report || '未生成审计报告');
+    } catch (err: any) {
+      alert('审计失败: ' + err.message);
+      setShowAudit(false);
+    } finally {
+      setIsAuditing(false);
+    }
   };
 
   // ── SVG Coordinate Mapping Computations ──
@@ -1105,6 +1146,27 @@ Timeline ticks: 0 to ${last.t} (Total steps: ${records.length})
                 📄 仅复制报告
               </button>
             </div>
+
+            {/* ── 审计报告按钮 ── */}
+            <div className="flex flex-wrap gap-3 mt-2">
+              <button
+                onClick={triggerAudit}
+                disabled={isAuditing}
+                className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 text-sm font-medium"
+              >
+                {isAuditing ? '⏳ 生成中...' : '📋 查看诊断依据'}
+              </button>
+            </div>
+            {showAudit && auditReport && (
+              <details className="border border-purple-200 rounded-lg bg-purple-50/30 shadow-sm" open>
+                <summary className="px-4 py-2 font-medium text-sm text-purple-700 cursor-pointer hover:text-purple-900">
+                  📋 诊断依据审计报告
+                </summary>
+                <div className="p-4 bg-white rounded-b-lg text-sm whitespace-pre-wrap font-sans leading-relaxed">
+                  {auditReport}
+                </div>
+              </details>
+            )}
 
             {/* ── ⚙️ METROLOGY INSPECTOR & CALIBRATION SNAPSHOT ── */}
             <Card className="p-6 border border-slate-200 hover:shadow-md transition-all duration-300">
